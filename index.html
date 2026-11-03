@@ -14,359 +14,295 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
 <style>
 /*
-  Layout: app de uma coluna. Topo com a semana em anilhas; abaixo, a anilha grande do dia e o título;
-  a ficha (aquecimento, musculação, caminhada) numa folha só; barra de abas fixa embaixo.
-  Identidade: cada dia tem a cor de uma anilha olímpica (25 kg vermelha, 20 azul, 15 amarela, 10 verde, 5 branca).
+  Layout: lista compacta. Dias em pílulas no topo; título do dia; alongamento do dia recolhido;
+  musculação e cintura em listas onde só o exercício tocado abre (orientação, vídeo, trocas).
+  Identidade: cada dia tem a cor de uma anilha olímpica.
 */
 :root{
-  --bg:#E9ECEA; --surface:#FFFFFF; --surface-2:#F2F4F3; --line:#D6DBD8;
-  --fg:#15191C; --muted:#5B656B; --hub:#2A3136;
+  --bg:#E9ECEA; --surface:#FFFFFF; --surface-2:#F1F3F2; --line:#D6DBD8; --open:#FBF7F6;
+  --fg:#15191C; --muted:#5B656B; --soft:#2E363B;
   --red:#D2382F; --blue:#2A63CC; --yellow:#E2AE1E; --green:#21915A; --white:#F4F4F0;
-  --ring:rgba(0,0,0,.18);
   --sans:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#38424A;
-    --fg:#ECEFEE; --muted:#9BA6AC; --hub:#11161A; --ring:rgba(0,0,0,.35);
+    --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#38424A; --open:#272F35;
+    --fg:#ECEFEE; --muted:#9BA6AC; --soft:#C9D1D5;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#38424A;
-  --fg:#ECEFEE; --muted:#9BA6AC; --hub:#11161A; --ring:rgba(0,0,0,.35);
+  --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#38424A; --open:#272F35;
+  --fg:#ECEFEE; --muted:#9BA6AC; --soft:#C9D1D5;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 var(--sans);font-variation-settings:"wdth" 100;-webkit-tap-highlight-color:transparent}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.45 var(--sans);-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 a{color:inherit}
-button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
-:focus-visible{outline:2px solid var(--fg);outline-offset:3px;border-radius:6px}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:8px}
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:grid;gap:16px}
 
-.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px calc(96px + env(safe-area-inset-bottom,0px))}
+/* Dias */
+.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;padding-block:2px}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;position:relative;display:grid;gap:1px;min-width:66px;min-height:54px;padding:8px 12px;border-radius:12px;border:1px solid var(--line)}
+.day b{font-size:14px;font-weight:700}
+.day span{font-size:12px;color:var(--muted)}
+.day[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
+.day[aria-pressed="true"] span{color:inherit;opacity:.88}
+.day[data-c="white"][aria-pressed="true"],.day[data-c="yellow"][aria-pressed="true"]{color:#15191C}
+.day[data-c="white"][aria-pressed="true"]{border-color:var(--line)}
+.day i{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
 
-/* Semana */
-.week{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding-block:6px 18px}
-.wk{position:relative;display:grid;justify-items:center;gap:6px;padding-block:6px 12px;border-radius:12px}
-.wk .mini{width:34px;height:34px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 3px var(--ring);position:relative;opacity:.35;transition:opacity .2s,transform .2s}
-.wk .mini::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--hub)}
-.wk[data-c="white"] .mini{box-shadow:inset 0 0 0 1.5px var(--line),inset 0 0 0 4px var(--ring)}
-.wk span{font-size:13px;font-weight:600;color:var(--muted)}
-.wk[aria-pressed="true"] .mini{opacity:1;transform:scale(1.08)}
-.wk[aria-pressed="true"] span{color:var(--fg)}
-.wk .today{position:absolute;bottom:2px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--fg)}
+/* Cabeçalho do dia */
+.head h1{margin:0;font-size:36px;line-height:1;font-weight:800;font-variation-settings:"wdth" 72;letter-spacing:-.01em;text-wrap:balance}
+.head p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.how{margin:0;font-size:14px;color:var(--soft);background:var(--surface);border-radius:14px;padding:12px 14px}
+.how b{font-weight:700}
 
-/* Destaque do dia */
-.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding-bottom:18px}
-.plate{width:104px;height:104px;border-radius:50%;background:var(--c);position:relative;
-  box-shadow:inset 0 0 0 5px var(--ring), inset 0 0 0 16px var(--c), inset 0 0 0 17.5px var(--ring);
-}
-.plate::after{content:"";position:absolute;inset:38px;border-radius:50%;background:var(--hub);box-shadow:0 0 0 3px var(--ring)}
-.plate.white{box-shadow:inset 0 0 0 1.5px var(--line), inset 0 0 0 5px var(--ring), inset 0 0 0 16px var(--c), inset 0 0 0 17.5px var(--ring)}
-.hero h1{margin:0;font-size:clamp(34px,10vw,46px);line-height:.95;font-weight:800;font-variation-settings:"wdth" 70;letter-spacing:-.01em;text-wrap:balance}
-.hero p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.4}
+/* Alongamento */
+.stretch{background:var(--surface);border-radius:14px;overflow:hidden}
+.stretch>button{width:100%;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px}
+.stretch .tx{flex:1;display:grid;min-width:0}
+.stretch .tx b{font-size:15px;font-weight:600}
+.stretch .tx span{font-size:12px;color:var(--muted)}
+.chev{width:16px;height:16px;flex:none;color:var(--muted);transition:transform .2s}
+[aria-expanded="true"] .chev{transform:rotate(180deg);color:var(--fg)}
+.st-list{border-top:1px solid var(--line);padding:6px 14px 12px;display:grid;gap:6px}
+.st-item{display:flex;align-items:center;gap:10px;min-height:48px}
+.st-item div{flex:1;display:grid}
+.st-item small{font-size:12px;color:var(--muted)}
 
-/* Bloco de 2 semanas */
-.cycle{background:var(--surface);border-radius:16px;padding:14px 16px;display:grid;gap:10px;margin-bottom:22px}
-.cycle-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
-.cycle-top strong{font-weight:700;font-variation-settings:"wdth" 85;font-size:17px}
-.cycle-top span{font-size:14px;color:var(--muted)}
-.ticks{display:grid;grid-template-columns:repeat(14,1fr);gap:3px}
-.ticks i{height:6px;border-radius:2px;background:var(--line)}
-.ticks i.on{background:var(--fg)}
-.ticks i.now{background:var(--c);box-shadow:inset 0 0 0 1px var(--ring)}
-.app[data-c="white"] .ticks i.now{box-shadow:inset 0 0 0 1.5px var(--fg)}
-.cycle small{font-size:13px;color:var(--muted)}
-
-/* Seções */
-h2{font-size:22px;font-weight:800;font-variation-settings:"wdth" 75;margin:0 0 10px;letter-spacing:-.005em}
-.sec{margin-bottom:26px}
-.sheet{background:var(--surface);border-radius:16px;overflow:hidden}
-.row{padding:16px}
-.row+.row{border-top:1px solid var(--line)}
-.lead{color:var(--muted);font-size:14px;margin:-4px 0 12px}
-
-.warm{list-style:none;margin:0;padding:0;counter-reset:w}
-.warm li{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:12px 16px;font-size:15px;counter-increment:w}
-.warm li+li{border-top:1px solid var(--line)}
-.warm li::before{content:counter(w);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-
-/* Exercício */
-.ex-top{display:grid;grid-template-columns:32px 1fr;gap:10px}
-.ex-n{font-size:26px;line-height:1;font-weight:800;font-variation-settings:"wdth" 65;color:var(--c);font-variant-numeric:tabular-nums;padding-top:2px}
-.ex-c[data-c="white"] .ex-n,.ex-c[data-c="yellow"] .ex-n{color:var(--fg)}
-.muscle{font-size:13px;color:var(--muted);font-weight:600;margin:0}
-.ex-name{margin:2px 0 0;font-size:20px;line-height:1.15;font-weight:700;font-variation-settings:"wdth" 85;text-wrap:balance}
-.specs{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:4px 18px;margin:12px 0 0 42px}
-.spec b{display:block;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 85}
-.spec span{font-size:12px;color:var(--muted)}
-.care{margin:12px 0 0 42px;font-size:14px;color:var(--muted);line-height:1.45}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0 42px}
+/* Listas */
+h2{margin:6px 0 -6px;font-size:20px;font-weight:800;font-variation-settings:"wdth" 75}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:16px;overflow:hidden}
+.ex+.ex{border-top:1px solid var(--line)}
+.ex.open{background:var(--open);box-shadow:inset 3px 0 0 var(--c)}
+.row{width:100%;display:flex;align-items:center;gap:12px;min-height:62px;padding:9px 14px}
+.num{width:28px;height:28px;flex:none;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.ex.open .num{background:var(--c);color:#fff}
+.app[data-c="white"] .ex.open .num,.app[data-c="yellow"] .ex.open .num{color:#15191C}
+.app[data-c="white"] .ex.open .num{box-shadow:inset 0 0 0 1.5px var(--line)}
+.app[data-c="white"] .ex.open{box-shadow:inset 3px 0 0 var(--muted)}
+.row .tx{flex:1;display:grid;min-width:0}
+.row .tx b{font-size:16px;font-weight:600;line-height:1.25}
+.ex.open .row .tx b{font-weight:700;font-size:17px}
+.row .tx span{font-size:13px;color:var(--muted)}
+.row .tx em{font-style:normal;font-size:12px;color:var(--muted)}
+.body{padding:0 14px 14px 54px;display:grid;gap:12px}
+.guide{display:grid;gap:6px}
+.gt{margin:0;font-size:13px;font-weight:700;color:var(--fg)}
+.how-l,.care-l{margin:0 0 4px;padding-left:20px;display:grid;gap:4px;font-size:14px;line-height:1.45;color:var(--soft)}
+.care-l li::marker{color:var(--red)}
+.st-block{display:grid;gap:8px;padding-block:4px 8px}
+.st-block+.st-block{border-top:1px solid var(--line);padding-top:12px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
 .btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding-inline:14px;border-radius:12px;font-weight:600;font-size:15px;text-decoration:none}
-.btn svg{width:16px;height:16px;flex:none}
+.btn svg{width:14px;height:14px;flex:none}
 .btn-play{background:var(--fg);color:var(--bg)}
-.btn-swap{background:var(--surface-2);color:var(--fg);border:1px solid var(--line)}
-.btn-swap[aria-expanded="true"]{border-color:var(--fg)}
-.btn-swap svg{transition:transform .2s;transform-origin:50% 50%;transform-box:fill-box}
-.btn-swap[aria-expanded="true"] svg{transform:rotate(180deg)}
-.swaps{margin:10px 0 0 42px;display:grid;gap:6px}
-.swap{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:8px 12px;border-radius:12px;background:var(--surface-2);text-decoration:none;font-size:15px}
-.swap span:first-child{min-width:0}
-.swap span:last-child{flex:none;font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
-.swap svg{width:12px;height:12px}
+.btn-line{border:1px solid var(--line);background:var(--surface)}
+.btn-line[aria-expanded="true"]{border-color:var(--fg)}
+.swaps{display:grid;gap:6px}
+.swaps p{margin:0;font-size:13px;color:var(--muted)}
+.swap{display:flex;align-items:center;gap:6px;min-height:52px;padding:6px 6px 6px 12px;border-radius:12px;background:var(--surface-2)}
+.swap span{flex:1;font-size:15px;min-width:0}
+.swap a,.swap button{display:inline-flex;align-items:center;min-height:40px;padding-inline:10px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none}
+.swap a{color:var(--muted)}
+.swap button{border:1px solid var(--line);background:var(--surface)}
+.undo{justify-self:start;font-size:13px;font-weight:600;color:var(--muted);text-decoration:underline;min-height:36px}
 
-/* Caminhada */
-.walk{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
-.walk-min{font-size:52px;line-height:.9;font-weight:800;font-variation-settings:"wdth" 65;font-variant-numeric:tabular-nums}
-.walk-min small{display:block;font-size:13px;font-weight:600;color:var(--muted);font-variation-settings:"wdth" 100;margin-top:4px}
-.walk dl{margin:0;display:grid;gap:6px;font-size:14px}
-.walk dt{color:var(--muted);font-size:12px}
-.walk dd{margin:0;font-weight:600}
-
-/* Alongar e cuidados */
-.list{list-style:none;margin:0;padding:0}
-.item{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:14px 16px}
-.item+.item{border-top:1px solid var(--line)}
-.item b{font-weight:600;font-size:16px}
-.item small{grid-column:1;font-size:13px;color:var(--muted)}
-.item a{grid-row:1/3;grid-column:2;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding-inline:12px;border-radius:10px;background:var(--surface-2);text-decoration:none;font-size:14px;font-weight:600}
-.item a svg{width:12px;height:12px}
-.stop li{padding:12px 16px;display:grid;grid-template-columns:10px 1fr;gap:12px;align-items:baseline;font-size:15px}
-.stop li+li{border-top:1px solid var(--line)}
-.stop li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);transform:translateY(-1px)}
-.prose{font-size:15px;color:var(--fg);margin:0}
-.prose+.prose{margin-top:10px}
-
-/* Abas */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabbar-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
-.tab{display:grid;justify-items:center;gap:4px;padding-block:10px 12px;font-size:12px;font-weight:600;color:var(--muted)}
-.tab svg{width:22px;height:22px}
-.tab[aria-selected="true"]{color:var(--fg)}
+/* Cuidados */
+details{background:var(--surface);border-radius:14px;padding:2px 14px}
+summary{list-style:none;min-height:52px;display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:22px;color:var(--muted)}
+details[open] summary::after{content:"−"}
+.safe{margin:0 0 12px;padding-left:18px;display:grid;gap:4px;font-size:15px}
+.safe li::marker{color:var(--red)}
+.note{font-size:14px;color:var(--muted);margin:0 0 12px}
 
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="app">
-  <section id="v-treino">
-    <nav class="week" id="week" aria-label="Dia da semana"></nav>
-    <header class="hero">
-      <div class="plate" id="plate" aria-hidden="true"></div>
-      <div><h1 id="title">Peito e tríceps</h1><p id="sub"></p></div>
-    </header>
-    <div class="cycle" id="cycle"></div>
-
-    <section class="sec">
-      <h2>Aquecimento</h2>
-      <ol class="sheet warm">
-        <li>Bike leve por 3 minutos</li>
-        <li>Círculos de quadril e de ombro, 10 de cada lado</li>
-        <li>Primeira série do exercício 1 com metade da carga</li>
-      </ol>
-    </section>
-
-    <section class="sec">
-      <h2>Musculação</h2>
-      <p class="lead">Carga moderada: termine cada série sentindo que ainda daria para fazer mais 2.</p>
-      <div class="sheet" id="exs"></div>
-    </section>
-
-    <section class="sec">
-      <h2>Caminhada inclinada</h2>
-      <div class="sheet"><div class="row walk">
-        <div class="walk-min">50<small>minutos</small></div>
-        <dl>
-          <div><dt>Semanas 1 e 2</dt><dd>Inclinação 5 a 6%, 5 km/h</dd></div>
-          <div><dt>Da semana 3 em diante</dt><dd>Inclinação 8 a 10%, 5 a 5,5 km/h</dd></div>
-        </dl>
-      </div>
-      <div class="row"><p class="prose" style="color:var(--muted);font-size:14px">Ritmo certo é conseguir falar frases curtas, mas não cantar. Não segure no corrimão. Se a lombar reclamar, baixe a inclinação e mantenha o tempo.</p></div></div>
-    </section>
-  </section>
-
-  <section id="v-alongar" hidden>
-    <header class="hero" style="grid-template-columns:1fr;padding-top:10px">
-      <div><h1>Alongamento da noite</h1><p>Em casa, uns 15 minutos. Segure cada posição de 30 a 45 segundos, duas vezes, respirando devagar. Deve puxar, nunca doer.</p></div>
-    </header>
-    <ul class="sheet list" id="stretch"></ul>
-    <p class="lead" style="margin-top:14px">Evite sentar sobre os calcanhares ou agachar fundo: essas posições forçam o menisco.</p>
-  </section>
-
-  <section id="v-cuidados" hidden>
-    <header class="hero" style="grid-template-columns:1fr;padding-top:10px">
-      <div><h1>Cuidados no treino</h1><p>Pare na hora se sentir qualquer um destes sinais.</p></div>
-    </header>
-    <ul class="sheet list stop">
-      <li>Dor ou aperto no peito</li>
-      <li>Falta de ar fora do normal para o esforço</li>
-      <li>Tontura, vista escura ou dor de cabeça forte</li>
-      <li>Fisgada aguda no joelho, na lombar ou no ombro</li>
+<div class="app" id="app">
+  <nav class="days" id="days" aria-label="Dia da semana"></nav>
+  <header class="head"><h1 id="title">Peito e tríceps</h1><p id="sub"></p></header>
+  <p class="how"><b>Como fazer:</b> carga leve, descida em 3 segundos e pausa de 1 a 2 segundos onde o músculo mais trabalha. Termine cada série com folga: nada de ir até a falha.</p>
+  <section class="stretch" id="stretch"></section>
+  <h2>Musculação</h2>
+  <ol class="list" id="main"></ol>
+  <h2>Barriga e cintura</h2>
+  <ol class="list" id="core"></ol>
+  <details>
+    <summary>Sinais para parar</summary>
+    <ul class="safe">
+      <li>Dor ou aperto no peito</li><li>Falta de ar fora do normal para o esforço</li>
+      <li>Tontura, vista escura ou dor de cabeça forte</li><li>Fisgada aguda no joelho, na lombar, no ombro ou no antebraço</li>
       <li>Formigamento no braço ou na mão</li>
     </ul>
-    <section class="sec" style="margin-top:22px">
-      <h2>No dia a dia</h2>
-      <div class="sheet"><div class="row">
-        <p class="prose">Solte o ar na fase de força. Prender a respiração sobe muito a pressão.</p>
-        <p class="prose">Guie o esforço pela fala, não pelo relógio. Remédio de pressão pode segurar os batimentos e enganar o monitor.</p>
-        <p class="prose">Use fita de pegada nas puxadas, remadas e encolhimentos para poupar o antebraço.</p>
-        <p class="prose">Fez todas as repetições com folga? Na próxima vez, suba o menor degrau de carga da máquina.</p>
-      </div></div>
-    </section>
-  </section>
+    <p class="note">Solte o ar na fase de força, nunca prenda a respiração. Use fita de pegada nas puxadas, remadas e encolhimentos.</p>
+  </details>
 </div>
-
-<nav class="tabbar" aria-label="Seções"><div class="tabbar-in" role="tablist">
-  <button class="tab" role="tab" data-v="treino" aria-selected="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 7v10M3 9.5v5M18 7v10M21 9.5v5M6 12h12"/></svg>Treino</button>
-  <button class="tab" role="tab" data-v="alongar" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 9l7 1.5L19 9M12 10.5V15l-3 6M12 15l3 6"/></svg>Alongar</button>
-  <button class="tab" role="tab" data-v="cuidados" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M8.5 12h2l1-2 2 4 1-2h1"/></svg>Cuidados</button>
-</div></nav>
 
 <script>
 (function(){
 const START = new Date(2026,9,12); // segunda-feira em que começou o bloco 1
-const yt = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q + " execução correta");
-const O = (n,q) => ({n,q:q||n});
+/* Vídeos específicos (preenchidos depois). Sem link aqui, o botão abre a busca no YouTube. */
+const VIDEOS = {};
+const yt = n => VIDEOS[n] || "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " execução correta");
+const X = (tag,s,r,c,o,alt) => ({tag,s,r,c,o,alt});
+const SAME = n => [n,n,n];
+
+const CORE_FRONT = X("Barriga","3 × 15 (prancha: 30 s)",45,"Movimento curto e lento. A força vem da barriga, não dos braços nem do pescoço.",
+  ["Abdominal na máquina","Abdominal na polia, ajoelhado","Prancha frontal, 30 s"],
+  ["Prancha frontal com joelhos apoiados, 30 s","Abdominal curto no colchonete"]);
+const CORE_SIDE = X("Lados da cintura","3 × 12 cada lado (prancha: 20 a 30 s)",45,"Quadril parado e barriga firme. Trabalha os lados da cintura e protege a lombar.",
+  ["Prancha lateral, 20 a 30 s","Pallof no cabo","Lenhador leve no cabo"],
+  ["Prancha lateral com joelho apoiado","Pallof com elástico"]);
+
 const DAYS = [
- {k:"seg",day:"Seg",short:"Peito",t:['Peito e ','tríceps'],ex:[
-  {tag:"Peito",s:"3 × 10–12",r:75,c:"Escápulas encostadas no banco. Desça controlando, sem bater no fim.",o:[O("Supino reto na máquina","supino reto máquina"),O("Supino reto no Smith","supino smith reto"),O("Supino reto com halteres leves","supino reto halteres")]},
-  {tag:"Peito superior",s:"3 × 10–12",r:75,c:"Banco a uns 30°. Cotovelos um pouco abaixo da linha do ombro.",o:[O("Supino inclinado na máquina","supino inclinado máquina"),O("Supino inclinado no Smith","supino inclinado smith"),O("Supino inclinado com halteres leves","supino inclinado halteres")]},
-  {tag:"Peito",s:"3 × 12–15",r:60,c:"Braços levemente dobrados. Abra só até sentir alongar o peito.",o:[O("Crucifixo na máquina (voador)","voador peck deck"),O("Crossover polia alta","crossover polia alta"),O("Crossover polia baixa","crossover polia baixa")]},
-  {tag:"Tríceps",s:"3 × 12–15",r:60,c:"Cotovelos colados ao corpo. Só o antebraço se move.",o:[O("Tríceps na polia com corda","tríceps corda polia"),O("Tríceps na polia com barra V","tríceps barra v polia"),O("Tríceps unilateral na polia","tríceps unilateral polia")]},
-  {tag:"Tríceps",s:"3 × 12–15",r:60,c:"Carga leve. Pare se o ombro ou o cotovelo incomodar.",o:[O("Tríceps francês na polia com corda","tríceps francês polia corda"),O("Tríceps na máquina sentado","tríceps máquina sentado"),O("Tríceps testa na polia","tríceps testa polia")]},
-  {tag:"Abdominal",s:"3 × 12–15",r:45,c:"Enrole o tronco devagar. A força vem do abdômen, não dos braços.",o:[O("Abdominal na máquina","abdominal máquina sentado"),O("Abdominal na polia, ajoelhado","abdominal polia ajoelhado"),O("Abdominal no colchonete, curto","abdominal crunch colchonete")]}
- ]},
- {k:"ter",day:"Ter",short:"Perna",t:['Perna · ','frente da coxa'],ex:[
-  {tag:"Quadríceps",s:"3 × 12–15",r:90,c:"Joelho até 90°, nunca mais fundo. A lombar não sai do encosto.",o:[O("Leg press 45°","leg press 45"),O("Hack machine, até 90°","hack machine agachamento"),O("Leg press horizontal","leg press horizontal")]},
-  {tag:"Quadríceps",s:"3 × 12–15",r:60,c:"Subida e descida controladas, sem tranco.",o:[O("Cadeira extensora","cadeira extensora"),O("Cadeira extensora unilateral","cadeira extensora unilateral"),O("Leg press com pés baixos e juntos","leg press pés baixos quadríceps")]},
-  {tag:"Posterior",s:"3 × 12–15",r:60,c:"Quadril firme no banco. Controle a volta.",o:[O("Mesa flexora","mesa flexora"),O("Cadeira flexora sentada","cadeira flexora"),O("Flexora unilateral em pé","flexora em pé unilateral máquina")]},
-  {tag:"Parte interna da coxa",s:"3 × 15",r:45,c:"Costas apoiadas. Feche devagar e segure 1 s.",o:[O("Cadeira adutora","cadeira adutora"),O("Adução no cabo, em pé","adução de quadril polia"),O("Adução deitado de lado","adução de quadril deitado de lado")]},
-  {tag:"Panturrilha",s:"3 × 15",r:45,c:"Pausa de 1 s lá em cima.",o:[O("Panturrilha sentado","panturrilha sentado máquina"),O("Panturrilha no leg press","panturrilha leg press"),O("Panturrilha em pé, só peso do corpo","panturrilha unilateral em pé peso corporal")]},
-  {tag:"Abdominal",s:"3 × 10 cada lado",r:45,c:"Abdômen firme, coluna parada. Protege a lombar.",o:[O("Pallof no cabo","pallof press"),O("Prancha frontal (30 s)","prancha abdominal"),O("Dead bug","dead bug exercício")]}
- ]},
- {k:"qua",day:"Qua",short:"Ombro",t:['Ombro e ','trapézio'],ex:[
-  {tag:"Ombro",s:"3 × 10–12",r:75,c:"Costas no encosto. Pare se o ombro fisgar.",o:[O("Desenvolvimento na máquina","desenvolvimento máquina ombro"),O("Desenvolvimento no Smith, sentado","desenvolvimento smith sentado"),O("Desenvolvimento com halteres leves, sentado","desenvolvimento halteres sentado")]},
-  {tag:"Ombro lateral",s:"3 × 12–15",r:45,c:"Carga leve. Suba até a linha do ombro, sem balançar o corpo.",o:[O("Elevação lateral no cabo","elevação lateral polia"),O("Elevação lateral na máquina","elevação lateral máquina"),O("Elevação lateral com halteres leves","elevação lateral halteres")]},
-  {tag:"Ombro posterior",s:"3 × 12–15",r:45,c:"Parte de trás do ombro. Corrige ombro caído para a frente.",o:[O("Crucifixo invertido na máquina","crucifixo invertido máquina"),O("Face pull na corda","face pull corda"),O("Crucifixo invertido no cabo","crucifixo invertido polia")]},
-  {tag:"Trapézio",s:"3 × 12–15",r:60,c:"Use fita de pegada. Suba os ombros em direção às orelhas, sem girar. Coluna reta.",o:[O("Encolhimento na máquina ou no Smith","encolhimento smith trapézio"),O("Encolhimento na polia baixa","encolhimento polia trapézio"),O("Encolhimento com halteres, com fita","encolhimento halteres trapézio")]},
-  {tag:"Trapézio médio",s:"3 × 12–15",r:60,c:"Carga leve. Aperte as escápulas e segure 1 s.",o:[O("Remada aberta na máquina, cotovelos altos","remada aberta máquina deltoide posterior"),O("Elevação em Y no cabo","elevação em Y polia"),O("Elevação em Y deitado no banco inclinado","Y raise banco inclinado")]},
-  {tag:"Abdominal",s:"3 × 10 cada lado",r:45,c:"Abdômen firme e quadril parado. Gire o tronco devagar, sem tranco.",o:[O("Lenhador no cabo, de cima para baixo","lenhador polia abdominal"),O("Pallof no cabo","pallof press"),O("Lenhador no cabo, de baixo para cima","lenhador baixo para cima polia")]}
- ]},
- {k:"qui",day:"Qui",short:"Perna",t:['Perna · ','posterior e glúteo'],ex:[
-  {tag:"Glúteo",s:"3 × 12",r:90,c:"Suba com o glúteo, sem arquear a lombar no alto.",o:[O("Elevação de quadril na máquina","elevação pélvica máquina"),O("Elevação de quadril no Smith","elevação pélvica smith"),O("Elevação de quadril no banco com anilha","elevação pélvica banco anilha")]},
-  {tag:"Glúteo e coxa",s:"3 × 12–15",r:90,c:"Pés altos na plataforma. Joelho até 90°, lombar no encosto.",o:[O("Leg press 45° com pés altos","leg press 45 pés altos glúteo"),O("Leg press horizontal com pés altos","leg press horizontal pés altos"),O("Hack machine com pés altos","hack machine pés altos glúteo")]},
-  {tag:"Posterior",s:"3 × 12–15",r:60,c:"Controle a volta. Sem tirar o quadril do banco.",o:[O("Cadeira flexora sentada","cadeira flexora"),O("Mesa flexora","mesa flexora"),O("Flexora unilateral em pé","flexora em pé unilateral máquina")]},
-  {tag:"Glúteo lateral",s:"3 × 15",r:45,c:"Costas apoiadas. Abra devagar e segure 1 s.",o:[O("Cadeira abdutora","cadeira abdutora"),O("Abdução no cabo, em pé","abdução de quadril polia"),O("Glúteo no cabo (coice em pé)","coice glúteo polia em pé")]},
-  {tag:"Panturrilha",s:"3 × 15",r:45,c:"Sem carga nos ombros, poupa a coluna.",o:[O("Panturrilha no leg press","panturrilha leg press"),O("Panturrilha sentado","panturrilha sentado máquina"),O("Panturrilha em pé, só peso do corpo","panturrilha unilateral em pé peso corporal")]},
-  {tag:"Abdominal",s:"3 × 10 cada lado",r:45,c:"Lombar colada no chão o tempo todo.",o:[O("Dead bug","dead bug exercício"),O("Prancha frontal (30 s)","prancha abdominal"),O("Pallof no cabo","pallof press")]}
- ]},
- {k:"sex",day:"Sex",short:"Costas",t:['Costas e ','bíceps'],ex:[
-  {tag:"Costas",s:"3 × 10–12",r:75,c:"Use fita de pegada. Puxe até o queixo, sem jogar o corpo.",o:[O("Puxada na frente (pulley)","puxada frontal pulley"),O("Puxada com triângulo","puxada triângulo pegada neutra"),O("Puxada na máquina articulada","puxada máquina articulada")]},
-  {tag:"Costas",s:"3 × 10–12",r:75,c:"Fita de pegada. Apoio no peito tira a carga da lombar.",o:[O("Remada com apoio no peito","remada máquina apoio no peito"),O("Remada máquina articulada","remada articulada sentada"),O("Remada baixa no cabo, tronco parado","remada baixa triângulo")]},
-  {tag:"Costas",s:"3 × 12–15",r:60,c:"Braços quase esticados. Leve a carga até as coxas sem dobrar a coluna.",o:[O("Pulldown com braços estendidos (corda)","pulldown braços estendidos corda"),O("Remada unilateral no cabo, sentado","remada unilateral polia sentado"),O("Puxada unilateral no cabo","puxada unilateral polia")]},
-  {tag:"Bíceps",s:"3 × 12–15",r:60,c:"Carga leve, sem balançar. Pegada neutra poupa o antebraço.",o:[O("Rosca martelo na polia com corda","rosca martelo corda polia"),O("Rosca na máquina (Scott)","rosca scott máquina"),O("Rosca martelo com halteres leves","rosca martelo halteres")]},
-  {tag:"Bíceps",s:"3 × 12–15",r:60,c:"Cotovelos parados ao lado do corpo. Pare se o antebraço doer.",o:[O("Rosca na polia com barra W","rosca bíceps polia barra w"),O("Rosca alternada com halteres leves","rosca alternada halteres"),O("Rosca no banco inclinado com halteres leves","rosca inclinada halteres")]},
-  {tag:"Abdominal",s:"3 × 12–15",r:45,c:"Movimento curto e controlado.",o:[O("Abdominal na polia, ajoelhado","abdominal polia ajoelhado"),O("Abdominal na máquina","abdominal máquina sentado"),O("Elevação de joelhos com apoio nas costas","elevação de joelhos cadeira capitão")]}
- ]}
+ {k:"seg",day:"Seg",short:"Peito",c:"red",title:"Peito e tríceps",
+  st:[["Peitoral na porta","2 × 30 s"],["Tríceps acima da cabeça","2 × 30 s cada braço"]],
+  ex:[
+   X("Peito","3 × 15",60,"Desça em 3 s e segure 1 s com o peito alongado. Escápulas encostadas no banco.",SAME("Supino reto na máquina"),["Supino reto no Smith, leve","Crossover na polia média","Supino reto com halteres leves"]),
+   X("Peito superior","3 × 15",60,"Banco a uns 30°. Cotovelos um pouco abaixo da linha do ombro.",["Supino inclinado na máquina","Supino inclinado no Smith","Supino inclinado na máquina"],["Supino inclinado no Smith","Crossover na polia baixa","Supino inclinado com halteres leves"]),
+   X("Peito","3 × 15–20",45,"Braços levemente dobrados. Segure 2 s com os braços fechados.",SAME("Voador"),["Crossover na polia média","Crossover na polia alta","Crucifixo com halteres leves no banco"]),
+   X("Peito","3 × 15–20",45,"Movimento lento, sem jogar o corpo.",["Crossover na polia alta","Crossover na polia baixa","Crossover na polia média"],["Voador","Flexão inclinada com as mãos no banco"]),
+   X("Tríceps","3 × 15–20",45,"Cotovelos colados ao corpo. Segure 1 s com o braço esticado.",["Tríceps na polia com corda","Tríceps na polia com barra","Tríceps na polia com corda"],["Tríceps na máquina sentado","Tríceps coice com halter leve"]),
+   X("Tríceps","3 × 15–20",45,"Carga leve. Pare se o ombro ou o cotovelo incomodar.",["Tríceps francês na polia","Tríceps na máquina sentado","Tríceps francês na polia"],["Tríceps francês com halter leve, sentado","Tríceps coice com halter leve"])
+  ]},
+ {k:"ter",day:"Ter",short:"Perna",c:"blue",title:"Perna frontal e panturrilha",
+  st:[["Flexor do quadril em pé, passada curta","2 × 30 s cada lado"],["Panturrilha na parede","2 × 30 s cada lado"]],
+  ex:[
+   X("Frente da coxa","3 × 15",60,"Joelho até 90°, nunca mais fundo. Lombar no encosto. Desça em 3 s.",["Leg press 45°","Leg press horizontal","Leg press 45°"],["Leg press horizontal","Hack machine leve, até 90°","Leg press unilateral leve"]),
+   X("Frente da coxa","3 × 15",60,"Costas apoiadas. Desça só até 90° e suba sem travar o joelho.",SAME("Hack machine leve, até 90°"),["Leg press horizontal","Sentar e levantar do banco","Cadeirinha alta na parede, 30 s"]),
+   X("Frente da coxa","3 × 15–20",45,"Segure 2 s com a perna esticada. Volte devagar.",SAME("Cadeira extensora"),["Leg press com pés baixos, leve","Sentar e levantar do banco"]),
+   X("Frente da coxa","3 × 15 cada perna",45,"Bem leve, uma perna por vez, com pausa de 2 s no alto.",SAME("Cadeira extensora unilateral"),["Cadeirinha alta na parede, 30 s","Leg press unilateral leve"]),
+   X("Panturrilha","3 × 20",45,"Suba devagar e segure 2 s lá em cima.",SAME("Panturrilha sentado"),["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
+   X("Panturrilha","3 × 20",45,"Carga leve e coluna reta. Se a lombar reclamar, use uma troca.",["Panturrilha em pé na máquina","Panturrilha no leg press","Panturrilha unilateral em pé"],["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo"])
+  ]},
+ {k:"qua",day:"Qua",short:"Costas",c:"yellow",title:"Costas, bíceps e antebraço",
+  st:[["Gato e camelo, de quatro","10 movimentos lentos"],["Antebraço e punho","2 × 30 s cada lado"]],
+  ex:[
+   X("Costas","3 × 15",60,"Use fita de pegada. Puxe até o queixo, sem jogar o corpo, e segure 1 s.",SAME("Puxada na frente no pulley"),["Puxada com triângulo","Puxada na máquina articulada"]),
+   X("Costas","3 × 15",60,"Fita de pegada. O apoio no peito tira a carga da lombar.",SAME("Remada com apoio no peito"),["Remada máquina articulada","Remada baixa no cabo","Remada unilateral no cabo, sentado"]),
+   X("Costas","3 × 15",60,"Tronco parado, sem balançar. Aperte as escápulas por 1 s.",SAME("Remada baixa no cabo"),["Remada unilateral no cabo, sentado","Pulldown com braços estendidos"]),
+   X("Bíceps","3 × 15–20",45,"Pegada neutra poupa o antebraço. Suba e desça devagar.",SAME("Rosca martelo na corda"),["Rosca martelo com halteres leves","Rosca Scott na máquina","Rosca inclinada com halteres leves"]),
+   X("Bíceps","3 × 15–20",45,"Cotovelos parados ao lado do corpo.",["Rosca na polia com barra W","Rosca Scott na máquina","Rosca alternada com halteres leves"],["Rosca Scott na máquina","Rosca alternada com halteres leves"]),
+   X("Antebraço","2 × 15",45,"Bem leve. Seu antebraço já trabalha muito no teclado: pare se doer.",["Rosca inversa na polia, leve","Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"],["Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"])
+  ]},
+ {k:"qui",day:"Qui",short:"Perna",c:"green",title:"Perna posterior e panturrilha",
+  st:[["Posterior de coxa deitado, com toalha","2 × 30 s cada perna"],["Figura 4 deitado","2 × 30 s cada lado"]],
+  ex:[
+   X("Posterior da coxa","3 × 15",60,"Quadril firme no banco. Volte em 3 s.",SAME("Mesa flexora"),["Cadeira flexora sentada","Flexora em pé, uma perna","Flexão de joelho com caneleira, em pé"]),
+   X("Posterior da coxa","3 × 15",60,"Segure 1 s com a perna dobrada. Lombar apoiada.",SAME("Cadeira flexora sentada"),["Mesa flexora","Flexão de joelho com caneleira, em pé","Flexora em pé, uma perna"]),
+   X("Glúteo e posterior","3 × 15",60,"Pés no alto da plataforma. Joelho até 90°, lombar no encosto.",["Leg press 45° com pés altos","Leg press horizontal com pés altos","Leg press 45° com pés altos"],["Leg press horizontal com pés altos","Ponte de glúteo no colchonete"]),
+   X("Glúteo lateral","3 × 20",45,"Costas apoiadas. Abra devagar e segure 2 s aberto.",SAME("Cadeira abdutora"),["Abdução no cabo, em pé","Abdução deitado de lado com elástico"]),
+   X("Panturrilha","3 × 20",45,"Sem carga nos ombros, poupa a coluna. Pausa de 2 s no alto.",SAME("Panturrilha no leg press"),["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
+   X("Panturrilha","3 × 20",45,"Suba devagar, desça devagar.",["Panturrilha sentado","Panturrilha unilateral em pé","Panturrilha sentado"],["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo"])
+  ]},
+ {k:"sex",day:"Sex",short:"Ombro",c:"white",title:"Ombro e trapézio",
+  st:[["Trapézio, inclinando a cabeça","2 × 30 s cada lado"],["Ombro cruzado na frente do peito","2 × 30 s cada braço"]],
+  ex:[
+   X("Ombro","3 × 15",60,"Costas no encosto. Pare se o ombro fisgar.",SAME("Desenvolvimento na máquina"),["Desenvolvimento com halteres leves, sentado","Desenvolvimento no Smith, sentado, leve"]),
+   X("Ombro lateral","3 × 15–20",45,"Suba até a linha do ombro, sem balançar o corpo.",SAME("Elevação lateral no cabo"),["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral sentado com halteres leves"]),
+   X("Ombro lateral","3 × 15–20",45,"Segure 2 s lá em cima. Carga bem leve.",["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral na máquina"],["Elevação lateral com halteres leves","Elevação lateral no cabo","Elevação lateral sentado com halteres leves"]),
+   X("Ombro posterior","3 × 15–20",45,"Parte de trás do ombro. Corrige ombro caído para a frente.",SAME("Crucifixo invertido na máquina"),["Crucifixo invertido no cabo","Face pull na corda"]),
+   X("Trapézio","3 × 15",45,"Fita de pegada. Suba os ombros sem girar e segure 2 s.",["Encolhimento no Smith","Encolhimento com halteres","Encolhimento na polia baixa"],["Encolhimento com halteres","Encolhimento na polia baixa"]),
+   X("Trapézio médio","3 × 15",45,"Cotovelos altos. Aperte as escápulas e segure 1 s.",SAME("Remada aberta na máquina"),["Face pull na corda","Crucifixo invertido no cabo"])
+  ]}
 ];
 
-const STRETCH = [
-  ["Joelhos ao peito, deitado","Lombar","alongamento joelhos ao peito lombar"],
-  ["Gato e camelo, de quatro","Coluna · 10 movimentos","gato camelo mobilidade coluna"],
-  ["Posterior de coxa deitado, com toalha","Atrás da coxa","alongamento posterior de coxa deitado toalha"],
-  ["Figura 4 deitado","Glúteo","alongamento figura 4 deitado glúteo"],
-  ["Afundo ajoelhado","Frente do quadril","alongamento flexor do quadril ajoelhado"],
-  ["Peitoral na porta","Peito e ombro","alongamento peitoral na porta"],
-  ["Antebraço e punho","Antebraço","alongamento antebraço punho"],
-  ["Panturrilha na parede","Panturrilha","alongamento panturrilha na parede"]
-];
-
-const COLOR = {seg:"red",ter:"blue",qua:"yellow",qui:"green",sex:"white"};
+const GUIDE = {"Abdominal na máquina": {"how": ["Sente com as costas no encosto e segure as alças sem puxar com os braços", "Enrole o tronco para a frente, levando as costelas em direção ao quadril", "Segure 1 s e volte devagar, sem deixar o peso bater"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Abdominal na polia, ajoelhado": {"how": ["Ajoelhe de frente para a polia alta, com a corda ao lado da cabeça", "Enrole o tronco para baixo levando os cotovelos às coxas, sem sentar nos calcanhares", "Volte devagar até o tronco ficar reto"], "care": ["Ajoelhe sobre um colchonete dobrado para poupar o joelho.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Prancha frontal, 30 s": {"how": ["Antebraços no chão, cotovelos logo abaixo dos ombros", "Corpo em linha reta da cabeça aos pés, barriga e glúteo firmes", "Segure o tempo respirando normalmente"], "care": ["Se o quadril cair ou a lombar doer, apoie os joelhos.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Prancha frontal com joelhos apoiados, 30 s": {"how": ["Antebraços no chão, cotovelos abaixo dos ombros, joelhos apoiados num colchonete", "Corpo reto dos joelhos à cabeça, barriga firme", "Segure o tempo respirando normalmente"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Abdominal curto no colchonete": {"how": ["Deite de costas, joelhos dobrados e pés no chão", "Mãos ao lado da cabeça, sem puxar o pescoço", "Tire só os ombros do chão, segure 1 s e volte devagar"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Prancha lateral, 20 a 30 s": {"how": ["Deite de lado com o cotovelo logo abaixo do ombro", "Suba o quadril até o corpo ficar em linha reta", "Segure o tempo e troque de lado"], "care": ["Se o ombro incomodar, apoie o joelho de baixo.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Prancha lateral com joelho apoiado": {"how": ["Deite de lado, cotovelo abaixo do ombro e joelhos dobrados", "Suba o quadril até alinhar joelho, quadril e ombro", "Segure e troque de lado"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Pallof no cabo": {"how": ["Fique de lado para a polia na altura do peito, alça segura com as duas mãos junto ao peito", "Estique os braços à frente sem deixar o tronco girar", "Segure 2 s, volte e depois faça o outro lado"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Lenhador leve no cabo": {"how": ["Polia alta, fique de lado e segure a alça com as duas mãos", "Leve a alça na diagonal até a altura do quadril oposto, girando o tronco com a barriga firme", "Volte devagar e faça os dois lados"], "care": ["Carga bem leve. Gire pelo tronco, sem torcer os joelhos.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Pallof com elástico": {"how": ["Prenda o elástico numa coluna na altura do peito e fique de lado para ela", "Estique os braços à frente sem deixar o tronco girar", "Segure 2 s, volte e troque de lado"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino reto na máquina": {"how": ["Ajuste o banco para as alças ficarem na altura do meio do peito", "Costas e cabeça no encosto, escápulas juntas e pés firmes no chão", "Empurre até quase esticar os braços e volte em 3 s até sentir o peito alongar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino reto no Smith, leve": {"how": ["Deite no banco com a barra alinhada ao meio do peito", "Destrave e desça em 3 s até perto do peito, cotovelos a uns 45° do corpo", "Empurre sem travar os cotovelos e trave a barra nos ganchos no fim"], "care": ["Pés no chão e lombar sem arquear demais.", "Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino reto com halteres leves": {"how": ["Deite com um halter em cada mão na linha do peito", "Empurre para cima até quase esticar, aproximando os halteres", "Desça em 3 s até os cotovelos ficarem um pouco abaixo do banco"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino inclinado na máquina": {"how": ["Ajuste o banco para as alças ficarem na altura da parte de cima do peito", "Costas no encosto e escápulas juntas", "Empurre até quase esticar e volte em 3 s"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino inclinado no Smith": {"how": ["Banco a uns 30°, barra alinhada com a parte de cima do peito", "Desça em 3 s com os cotovelos um pouco abaixo da linha do ombro", "Empurre sem travar os cotovelos e trave a barra no fim"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Supino inclinado com halteres leves": {"how": ["Banco a uns 30°, um halter em cada mão na linha do peito", "Empurre para cima aproximando os halteres", "Desça em 3 s até sentir o peito alongar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Voador": {"how": ["Ajuste o banco para as alças ficarem na altura do peito", "Costas no encosto e braços levemente dobrados", "Feche os braços à frente, segure 2 s e abra devagar, sem passar da linha do ombro"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Crossover na polia média": {"how": ["Polias na altura do peito, dê um passo à frente com o tronco levemente inclinado", "Braços levemente dobrados, junte as mãos à frente do peito", "Segure 1 s e volte devagar até sentir o peito alongar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Crossover na polia baixa": {"how": ["Polias embaixo, dê um passo à frente", "Leve as mãos de baixo para cima até a altura do queixo, braços levemente dobrados", "Segure 1 s e volte devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Crossover na polia alta": {"how": ["Polias no alto, dê um passo à frente", "Leve as mãos de cima para baixo até a frente do quadril", "Segure 1 s e volte devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Crucifixo com halteres leves no banco": {"how": ["Deite com os halteres acima do peito, palmas uma de frente para a outra", "Abra os braços em arco, cotovelos levemente dobrados, até a linha do peito", "Volte em arco até em cima"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Flexão inclinada com as mãos no banco": {"how": ["Mãos no banco na largura dos ombros, corpo reto", "Desça o peito em direção ao banco com os cotovelos a uns 45°", "Empurre de volta sem deixar o quadril cair"], "care": ["Se o punho doer, segure na borda do banco com o punho reto.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Tríceps na polia com corda": {"how": ["Polia alta, cotovelos colados ao corpo", "Empurre a corda para baixo até esticar, abrindo as pontas no final", "Segure 1 s e suba devagar até o cotovelo fazer 90°"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Tríceps na polia com barra": {"how": ["Polia alta, pegada na largura dos ombros, cotovelos colados ao corpo", "Empurre a barra para baixo até esticar", "Segure 1 s e suba devagar até 90° no cotovelo"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Tríceps na máquina sentado": {"how": ["Ajuste o banco para o cotovelo ficar alinhado com o eixo da máquina", "Empurre até esticar sem tirar as costas do encosto", "Volte devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Tríceps coice com halter leve": {"how": ["Apoie uma mão e um joelho no banco, costas retas", "Cotovelo colado ao corpo, estique o braço para trás", "Segure 1 s e volte devagar"], "care": ["Se o joelho incomodar no banco, faça em pé com o tronco inclinado e a mão apoiada.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco."]}, "Tríceps francês na polia": {"how": ["De costas para a polia, corda atrás da cabeça e cotovelos apontando para a frente", "Estique os braços para a frente e para cima", "Volte devagar sem abrir os cotovelos"], "care": ["Barriga firme para não arquear a lombar.", "Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Tríceps francês com halter leve, sentado": {"how": ["Sente num banco com encosto e segure um halter com as duas mãos acima da cabeça", "Desça o halter atrás da cabeça dobrando só os cotovelos", "Suba até esticar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Leg press 45°": {"how": ["Costas e quadril colados no encosto, pés na largura do quadril no meio da plataforma", "Destrave e desça em 3 s até o joelho fazer 90°", "Empurre pelos calcanhares sem travar os joelhos no alto"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Leg press horizontal": {"how": ["Costas no encosto, pés na largura do quadril no meio da plataforma", "Dobre os joelhos em 3 s até 90°", "Empurre pelos calcanhares sem travar os joelhos"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Hack machine leve, até 90°": {"how": ["Costas no encosto e ombros sob as almofadas, pés um pouco à frente do corpo", "Desça em 3 s até o joelho fazer 90°", "Suba empurrando pelos calcanhares sem travar os joelhos"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Leg press unilateral leve": {"how": ["Costas no encosto, um pé no meio da plataforma e o outro apoiado fora", "Desça em 3 s até 90° no joelho", "Empurre pelo calcanhar e troque de perna"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Sentar e levantar do banco": {"how": ["Fique de costas para um banco na altura do joelho, pés na largura do quadril", "Sente devagar, só encostando no banco", "Levante empurrando o chão, sem usar as mãos se conseguir"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Cadeirinha alta na parede, 30 s": {"how": ["Costas na parede, pés um passo à frente", "Desça só um pouco, com o joelho bem aberto, longe dos 90°", "Segure o tempo respirando normalmente"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Cadeira extensora": {"how": ["Ajuste o encosto para o joelho ficar alinhado com o eixo da máquina e o rolo logo acima do tornozelo", "Estique as pernas e segure 2 s no alto", "Desça em 3 s"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Cadeira extensora unilateral": {"how": ["Mesmo ajuste da extensora, trabalhando uma perna por vez", "Estique a perna e segure 2 s no alto", "Desça em 3 s e troque de perna"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Leg press com pés baixos, leve": {"how": ["Pés na parte de baixo da plataforma, na largura do quadril", "Desça em 3 s até 90° no joelho", "Empurre sem travar os joelhos"], "care": ["Se sentir o joelho com os pés tão baixos, suba um pouco os pés.", "Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Panturrilha sentado": {"how": ["Joelhos sob a almofada, pontas dos pés na plataforma", "Suba os calcanhares o máximo e segure 2 s", "Desça devagar até alongar a panturrilha"], "care": ["Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Panturrilha no leg press": {"how": ["Pontas dos pés na borda de baixo da plataforma, pernas quase esticadas sem travar", "Empurre com a ponta dos pés e segure 2 s", "Volte devagar até alongar"], "care": ["Faça com a trava de segurança ao alcance da mão.", "Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Panturrilha em pé apoiado, só peso do corpo": {"how": ["Pontas dos pés num degrau, mão apoiada na parede", "Suba na ponta dos pés e segure 2 s", "Desça devagar até alongar"], "care": ["Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Panturrilha unilateral em pé": {"how": ["Ponta de um pé no degrau, mão apoiada na parede", "Suba na ponta do pé e segure 2 s", "Desça devagar e troque de pé"], "care": ["Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Panturrilha em pé na máquina": {"how": ["Ombros sob as almofadas, pontas dos pés na plataforma", "Suba os calcanhares e segure 2 s", "Desça devagar até alongar"], "care": ["A carga nos ombros pesa na coluna: use carga leve.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Puxada na frente no pulley": {"how": ["Coxas presas sob o apoio, pegada um pouco mais aberta que os ombros, com fita", "Peito para cima, puxe a barra até a altura do queixo levando os cotovelos para baixo", "Segure 1 s e volte devagar até esticar os braços"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Puxada com triângulo": {"how": ["Coxas presas sob o apoio, triângulo nas mãos com palmas frente a frente", "Puxe até a altura do peito levando os cotovelos para baixo e para trás", "Segure 1 s e volte devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Puxada na máquina articulada": {"how": ["Ajuste o banco e prenda as coxas no apoio", "Puxe as alças para baixo levando os cotovelos rente ao corpo", "Segure 1 s e volte devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Remada com apoio no peito": {"how": ["Ajuste o banco para o peito ficar todo apoiado", "Puxe as alças levando os cotovelos para trás, rente ao corpo", "Aperte as escápulas 1 s e volte devagar"], "care": ["O apoio no peito tira a carga da lombar.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Remada máquina articulada": {"how": ["Sente com o peito no apoio e pés firmes", "Puxe as alças levando os cotovelos para trás", "Aperte as escápulas 1 s e volte devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Remada baixa no cabo": {"how": ["Sente com os joelhos levemente dobrados e a coluna reta", "Puxe o triângulo até a barriga levando os cotovelos para trás", "Aperte as escápulas 1 s e volte sem inclinar o tronco à frente"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Remada unilateral no cabo, sentado": {"how": ["Sente de frente para a polia baixa, coluna reta, alça numa mão", "Puxe até a cintura com o cotovelo rente ao corpo, sem girar o tronco", "Volte devagar e troque de braço"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Pulldown com braços estendidos": {"how": ["De frente para a polia alta, corda nas mãos, um passo atrás e tronco levemente inclinado", "Com os braços quase esticados, leve a corda até as coxas", "Volte devagar até a altura dos olhos"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Rosca martelo na corda": {"how": ["Polia baixa, corda nas mãos com as palmas uma de frente para a outra", "Cotovelos parados ao lado do corpo, suba até a altura do peito", "Desça em 3 s"], "care": ["Sem balançar o corpo.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Rosca martelo com halteres leves": {"how": ["Em pé, halteres ao lado do corpo com as palmas viradas para dentro", "Suba sem mexer os cotovelos", "Desça em 3 s"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Rosca Scott na máquina": {"how": ["Ajuste o banco para a axila encostar no topo do apoio", "Suba até perto do ombro", "Desça devagar sem esticar o cotovelo de uma vez"], "care": ["Não solte o peso no final: esticar rápido força o cotovelo.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der."]}, "Rosca inclinada com halteres leves": {"how": ["Sente num banco inclinado a uns 60°, braços pendurados", "Suba os halteres sem tirar os cotovelos do lugar", "Desça devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Rosca na polia com barra W": {"how": ["Polia baixa, barra W na pegada inclinada", "Cotovelos parados ao lado do corpo, suba até o peito", "Desça em 3 s"], "care": ["A barra W deixa o punho numa posição mais confortável.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Rosca alternada com halteres leves": {"how": ["Em pé, halteres ao lado do corpo", "Suba um braço de cada vez, girando a palma para cima durante a subida", "Desça devagar e alterne"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Rosca inversa na polia, leve": {"how": ["Polia baixa, barra com as palmas viradas para baixo", "Suba sem mexer os cotovelos", "Desça devagar"], "care": ["Carga bem leve: esse exercício trabalha direto o antebraço.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der."]}, "Flexão de punho com halter leve": {"how": ["Sentado, antebraço apoiado na coxa, palma para cima", "Suba só o punho, devagar", "Desça devagar"], "care": ["Pare se sentir dor no punho ou no antebraço.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der."]}, "Segurar halteres leves parado, 20 s": {"how": ["Em pé, um halter leve em cada mão, braços ao lado do corpo", "Ombros para trás e barriga firme", "Segure o tempo respirando normalmente"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Mesa flexora": {"how": ["Deite de barriga para baixo com o rolo logo acima do calcanhar e o joelho fora do banco", "Dobre os joelhos trazendo o rolo em direção ao glúteo, sem tirar o quadril do banco", "Segure 1 s e volte em 3 s"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Cadeira flexora sentada": {"how": ["Ajuste para o joelho ficar alinhado com o eixo e trave a coxa com o apoio", "Dobre as pernas puxando o rolo para baixo", "Segure 1 s e volte devagar"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco."]}, "Flexora em pé, uma perna": {"how": ["Apoie o peito ou as mãos no aparelho, rolo atrás do tornozelo", "Dobre o joelho levando o calcanhar em direção ao glúteo, com a coxa parada", "Volte devagar e troque de perna"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Flexão de joelho com caneleira, em pé": {"how": ["Caneleira leve no tornozelo, mãos apoiadas numa parede ou aparelho", "Dobre o joelho levando o calcanhar ao glúteo, coxa parada", "Volte devagar e troque de perna"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco."]}, "Leg press 45° com pés altos": {"how": ["Pés na parte de cima da plataforma, na largura do quadril", "Desça em 3 s até o joelho fazer 90°, quadril colado no encosto", "Empurre pelos calcanhares"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Leg press horizontal com pés altos": {"how": ["Pés na parte de cima da plataforma, na largura do quadril", "Dobre os joelhos em 3 s até 90°", "Empurre pelos calcanhares sem travar os joelhos"], "care": ["Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Ponte de glúteo no colchonete": {"how": ["Deite de costas, joelhos dobrados e pés no chão", "Suba o quadril apertando o glúteo até alinhar joelho, quadril e ombro", "Segure 2 s e desça devagar"], "care": ["Sem arquear a lombar no alto: a força vem do glúteo.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Cadeira abdutora": {"how": ["Costas no encosto, almofadas do lado de fora dos joelhos", "Abra as pernas devagar", "Segure 2 s e feche controlando"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Abdução no cabo, em pé": {"how": ["Caneleira presa à polia baixa no tornozelo de fora, mão apoiada no aparelho", "Leve a perna para o lado sem inclinar o tronco", "Volte devagar e troque de lado"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Abdução deitado de lado com elástico": {"how": ["Deite de lado, elástico acima dos joelhos, joelhos dobrados", "Abra o joelho de cima mantendo os pés juntos", "Segure 2 s e feche"], "care": ["Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Desenvolvimento na máquina": {"how": ["Ajuste o banco para as alças ficarem na altura dos ombros", "Costas no encosto, empurre para cima sem travar os cotovelos", "Desça em 3 s até a altura das orelhas"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Desenvolvimento com halteres leves, sentado": {"how": ["Banco com encosto reto, halteres na altura das orelhas", "Empurre para cima sem bater um halter no outro", "Desça em 3 s"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Desenvolvimento no Smith, sentado, leve": {"how": ["Banco com encosto reto embaixo da barra, barra na frente do rosto", "Empurre para cima sem travar os cotovelos", "Desça em 3 s até a altura do queixo"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Elevação lateral no cabo": {"how": ["Polia baixa, fique de lado com a alça na mão de fora", "Braço levemente dobrado, suba de lado até a linha do ombro", "Segure 1 s e desça devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Elevação lateral na máquina": {"how": ["Ajuste o banco para o ombro ficar alinhado com o eixo", "Suba os braços de lado até a linha do ombro", "Segure 2 s e desça devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Elevação lateral com halteres leves": {"how": ["Em pé, halteres ao lado do corpo, cotovelos levemente dobrados", "Suba os braços de lado até a linha do ombro, sem balançar", "Desça devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Elevação lateral sentado com halteres leves": {"how": ["Sentado com a coluna reta, halteres ao lado do corpo", "Suba de lado até a linha do ombro", "Desça devagar"], "care": ["Sentado fica mais difícil roubar com o corpo, então use pouco peso.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Crucifixo invertido na máquina": {"how": ["Peito no encosto, alças na altura dos ombros", "Abra os braços para trás com os cotovelos levemente dobrados", "Aperte 1 s e volte devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Crucifixo invertido no cabo": {"how": ["Polias na altura dos ombros, cabos cruzados à frente do corpo", "Abra os braços para os lados e para trás", "Segure 1 s e volte devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Face pull na corda": {"how": ["Polia na altura do rosto, corda nas duas mãos", "Puxe a corda em direção à testa abrindo os cotovelos para os lados e para cima", "Segure 1 s e volte devagar"], "care": ["Ombro: se fisgar, diminua a amplitude ou use uma troca.", "Antebraço: pegada leve e punho reto. Use fita de pegada quando der."]}, "Encolhimento no Smith": {"how": ["Barra na frente das coxas, pegada na largura dos ombros, com fita", "Suba os ombros em direção às orelhas, sem girar", "Segure 2 s e desça devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Encolhimento com halteres": {"how": ["Em pé, halteres ao lado do corpo, com fita", "Suba os ombros em direção às orelhas, sem girar", "Segure 2 s e desça devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Encolhimento na polia baixa": {"how": ["De frente para a polia baixa, barra nas mãos, com fita", "Suba os ombros em direção às orelhas", "Segure 2 s e desça devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude.", "Pressão: solte o ar na fase de força e não prenda a respiração, nem nas pausas."]}, "Remada aberta na máquina": {"how": ["Peito no apoio, pegada aberta", "Puxe com os cotovelos altos e abertos, na linha dos ombros", "Aperte as escápulas 1 s e volte devagar"], "care": ["Antebraço: pegada leve e punho reto. Use fita de pegada quando der.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Peitoral na porta": {"how": ["Antebraço no batente, cotovelo na altura do ombro", "Dê um passo à frente e gire o tronco para o lado oposto até sentir o peito alongar"], "care": ["Deve puxar de leve, nunca doer.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Tríceps acima da cabeça": {"how": ["Leve uma mão às costas, passando o braço por cima da cabeça", "Com a outra mão, empurre o cotovelo de leve para trás"], "care": ["Deve puxar de leve, nunca doer.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}, "Flexor do quadril em pé, passada curta": {"how": ["Passada curta com uma mão na parede", "Aperte o glúteo da perna de trás e leve o quadril um pouco à frente"], "care": ["Não dobre muito o joelho da frente.", "Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco."]}, "Panturrilha na parede": {"how": ["Mãos na parede, uma perna atrás esticada com o calcanhar no chão", "Incline o corpo à frente até sentir a panturrilha"], "care": ["Deve puxar de leve, nunca doer."]}, "Gato e camelo, de quatro": {"how": ["De quatro, mãos abaixo dos ombros e joelhos abaixo do quadril", "Arredonde as costas olhando para o umbigo, depois afunde as costas olhando à frente, bem devagar"], "care": ["Joelhos sobre um colchonete.", "Movimento lento, sem forçar a lombar."]}, "Antebraço e punho": {"how": ["Braço esticado à frente, palma para cima: puxe os dedos para baixo com a outra mão", "Depois palma para baixo: puxe a mão em direção ao corpo"], "care": ["Deve puxar de leve, nunca doer.", "Faça também ao longo do dia, nas pausas do computador."]}, "Posterior de coxa deitado, com toalha": {"how": ["Deite de costas com uma toalha na sola de um pé", "Suba a perna quase esticada até sentir atrás da coxa, com a outra perna no chão"], "care": ["Deitado protege a lombar. Não force além da leve puxada.", "Lombar: costas apoiadas e barriga firme. Se a lombar reclamar, diminua a carga ou a amplitude."]}, "Figura 4 deitado": {"how": ["Deite de costas e cruze o tornozelo sobre o joelho oposto", "Puxe a coxa de baixo em direção ao peito até sentir o glúteo"], "care": ["Se o joelho incomodar, puxe menos.", "Joelho (menisco): não passe de 90° e nunca trave a perna esticada com tranco."]}, "Trapézio, inclinando a cabeça": {"how": ["Sentado, segure a borda do banco com uma mão", "Incline a cabeça para o lado oposto, devagar"], "care": ["Sem puxar a cabeça com força."]}, "Ombro cruzado na frente do peito": {"how": ["Leve um braço esticado na frente do peito", "Com o outro braço, puxe de leve pelo cotovelo"], "care": ["Deve puxar de leve, nunca doer.", "Ombro: se fisgar, diminua a amplitude ou use uma troca."]}};
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit"});
-const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>';
-const ICON_SWAP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
-const ICON_OUT = '<svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M3 1.5v9l7-4.5z"/></svg>';
+const I_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>';
+const I_CHEV = '<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+const I_STRETCH = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:var(--muted)"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 9l7 1.5L19 9M12 10.5V15l-3 6M12 15l3 6"/></svg>';
 
 function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
 function blockInfo(){
-  const now=today0();
-  const days=Math.max(0,Math.floor((now-START)/864e5));
+  const days=Math.max(0,Math.floor((today0()-START)/864e5));
   const n=Math.floor(days/14);
   const next=new Date(START); next.setDate(START.getDate()+(n+1)*14);
-  return {b:n%3, dayIn:days%14, next};
+  return {b:n%3,next};
 }
-const wd = new Date().getDay();
+const wd=new Date().getDay();
 const todayIdx = wd>=1&&wd<=5 ? wd-1 : -1;
 let cur = todayIdx>=0 ? todayIdx : 0;
-let open = {};
+let openId=null, swapOpen={}, chosen={}, stOpen=false;
 
-function setColor(el,k){ el.style.setProperty("--c","var(--"+COLOR[k]+")"); }
-
-function renderWeek(){
-  const w=document.getElementById("week");
-  w.innerHTML = DAYS.map((d,i)=>`<button class="wk" data-i="${i}" data-c="${COLOR[d.k]}" aria-pressed="${i===cur}" aria-label="${d.day}: ${esc(d.t.join(""))}" style="--c:var(--${COLOR[d.k]})"><i class="mini"></i><span>${d.day}</span>${i===todayIdx?'<i class="today" aria-hidden="true"></i>':''}</button>`).join("");
+function slotsFor(D,B){
+  const shift=(B.b+cur)%3;
+  const core=[CORE_FRONT,CORE_SIDE].map(e=>({...e,main:e.o[shift]}));
+  return {main:D.ex.map(e=>({...e,main:e.o[B.b]})), core};
+}
+function altsOf(e,used){
+  const pool=[...e.alt,...e.o].filter((n,i,a)=>a.indexOf(n)===i && n!==e.main);
+  const free=pool.filter(n=>!used.has(n));
+  return [...free,...pool.filter(n=>used.has(n))].slice(0,2);
 }
 
-function render(spin){
-  const D=DAYS[cur], B=blockInfo(), app=document.querySelector(".app");
-  setColor(app,D.k); app.dataset.c=COLOR[D.k];
-  renderWeek();
-  const plate=document.getElementById("plate");
-  plate.className="plate"+(COLOR[D.k]==="white"?" white":"");
-  if(spin && plate.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches){ plate.animate([{transform:"scale(.82)"},{transform:"scale(1.04)"},{transform:"scale(1)"}],{duration:380,easing:"cubic-bezier(.3,.7,.2,1)"}); }
-  document.getElementById("title").textContent = D.t.join("");
-  document.getElementById("sub").textContent = (cur===todayIdx?"Treino de hoje. ":"")+"6 exercícios, cerca de 35 minutos, e depois a caminhada.";
-  const ticks = Array.from({length:14},(_,i)=>`<i class="${i<B.dayIn?"on":i===B.dayIn?"now":""}"></i>`).join("");
-  document.getElementById("cycle").innerHTML = `
-    <div class="cycle-top"><strong>Bloco ${B.b+1} de 3</strong><span>Exercícios novos na segunda, ${fmt.format(B.next)}</span></div>
-    <div class="ticks" aria-hidden="true">${ticks}</div>
-    <small>Os exercícios se revezam a cada 2 semanas. As trocas de cada um são as versões dos outros blocos.</small>`;
-  document.getElementById("exs").innerHTML = D.ex.map((e,i)=>{
-    const main=e.o[B.b], alts=e.o.filter((_,j)=>j!==B.b), id="sw-"+D.k+"-"+i, isOpen=!!open[id];
-    const [sets,reps]=e.s.split(" × ");
-    return `<article class="row ex-c" data-c="${COLOR[D.k]}">
-      <div class="ex-top"><span class="ex-n">${i+1}</span><div><p class="muscle">${esc(e.tag)}</p><h3 class="ex-name">${esc(main.n)}</h3></div></div>
-      <div class="specs">
-        <div class="spec"><b>${esc(sets)}</b><span>séries</span></div>
-        <div class="spec"><b>${esc(reps)}</b><span>${/\d+ s/.test(reps)?"tempo":"repetições"}</span></div>
-        <div class="spec"><b>${e.r} s</b><span>descanso</span></div>
+function guideHTML(name){
+  const g=GUIDE[name]; if(!g) return "";
+  return `<div class="guide"><p class="gt">Como fazer</p><ol class="how-l">${g.how.map(h=>`<li>${esc(h)}</li>`).join("")}</ol>
+    <p class="gt">Seus cuidados</p><ul class="care-l">${g.care.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>`;
+}
+function exHTML(e,key,i,used){
+  const isOpen=openId===key, name=chosen[key]||e.main, swapped=!!chosen[key];
+  const alts=altsOf(e,used).map(n=>n===name?e.main:n);
+  return `<li class="ex${isOpen?" open":""}">
+    <button class="row" data-open="${key}" aria-expanded="${isOpen}">
+      <span class="num">${i+1}</span>
+      <span class="tx"><b>${esc(name)}</b><span>${esc(e.s)}, descanso ${e.r} s</span>${swapped?`<em>no lugar de ${esc(e.main)}</em>`:""}</span>
+      ${I_CHEV}
+    </button>
+    ${isOpen?`<div class="body">
+      ${guideHTML(name)}
+      <div class="acts">
+        <a class="btn btn-play" href="${yt(name)}" target="_blank" rel="noopener">${I_PLAY}Ver execução</a>
+        <button class="btn btn-line" data-swap="${key}" aria-expanded="${!!swapOpen[key]}">Aparelho ocupado</button>
       </div>
-      <p class="care">${esc(e.c)}</p>
-      <div class="actions">
-        <a class="btn btn-play" href="${yt(main.q)}" target="_blank" rel="noopener">${ICON_PLAY}Ver execução</a>
-        <button class="btn btn-swap" data-sw="${id}" aria-expanded="${isOpen}" aria-controls="${id}">Aparelho ocupado ${ICON_SWAP}</button>
-      </div>
-      <div class="swaps" id="${id}" ${isOpen?"":"hidden"}>${
-        alts.map(a=>`<a class="swap" href="${yt(a.q)}" target="_blank" rel="noopener"><span>${esc(a.n)}</span><span>${ICON_OUT}vídeo</span></a>`).join("")
-      }</div>
-    </article>`;
-  }).join("");
+      ${swapOpen[key]?`<div class="swaps"><p>Troque por um destes. Veja o vídeo antes, se quiser.</p>${
+        alts.map(n=>`<div class="swap"><span>${esc(n)}</span><a href="${yt(n)}" target="_blank" rel="noopener">Vídeo</a><button data-use="${key}" data-name="${esc(n)}">Trocar</button></div>`).join("")
+      }</div>`:""}
+      ${swapped?`<button class="undo" data-undo="${key}">Voltar para ${esc(e.main)}</button>`:""}
+    </div>`:""}
+  </li>`;
 }
 
-document.getElementById("stretch").innerHTML = STRETCH.map(s=>
-  `<li class="item"><b>${esc(s[0])}</b><small>${esc(s[1])}</small><a href="${yt(s[2])}" target="_blank" rel="noopener">${ICON_OUT}Vídeo</a></li>`).join("");
+function render(){
+  const D=DAYS[cur], B=blockInfo(), S=slotsFor(D,B), app=document.getElementById("app");
+  app.style.setProperty("--c","var(--"+D.c+")"); app.dataset.c=D.c;
+  document.getElementById("days").innerHTML=DAYS.map((d,i)=>
+    `<button class="day" data-day="${i}" data-c="${d.c}" style="--c:var(--${d.c})" aria-pressed="${i===cur}"><b>${d.day}</b><span>${d.short}</span>${i===todayIdx?'<i aria-label="hoje"></i>':""}</button>`).join("");
+  document.getElementById("title").textContent=D.title;
+  const total=S.main.length+S.core.length;
+  document.getElementById("sub").textContent=(cur===todayIdx?"Treino de hoje. ":"")+`${total} exercícios, cerca de 50 min. Bloco ${B.b+1} de 3, exercícios novos em ${fmt.format(B.next)}.`;
+  document.getElementById("stretch").innerHTML=`
+    <button data-st aria-expanded="${stOpen}">${I_STRETCH}<span class="tx"><b>Alongar: ${esc(D.st.map(s=>s[0].split(",")[0].toLowerCase()).join(", "))}</b><span>Antes ou depois do treino</span></span>${I_CHEV}</button>
+    ${stOpen?`<div class="st-list">${D.st.map(s=>`<div class="st-block"><div class="st-item"><div><span>${esc(s[0])}</span><small>${esc(s[1])}</small></div><a class="btn btn-line" href="${VIDEOS[s[0]]||yt("alongamento "+s[0])}" target="_blank" rel="noopener">${I_PLAY}Vídeo</a></div>${guideHTML(s[0])}</div>`).join("")}</div>`:""}`;
+  const used=new Set([...S.main.map((e,i)=>chosen[D.k+"-m"+i]||e.main),...S.core.map((e,i)=>chosen[D.k+"-c"+i]||e.main)]);
+  document.getElementById("main").innerHTML=S.main.map((e,i)=>exHTML(e,D.k+"-m"+i,i,used)).join("");
+  document.getElementById("core").innerHTML=S.core.map((e,i)=>exHTML(e,D.k+"-c"+i,S.main.length+i,used)).join("");
+}
 
 document.addEventListener("click",ev=>{
-  const wk=ev.target.closest(".wk");
-  if(wk){ const i=+wk.dataset.i; if(i!==cur){ cur=i; open={}; render(true); } return; }
-  const sw=ev.target.closest("[data-sw]");
-  if(sw){ const id=sw.dataset.sw; open[id]=!open[id]; sw.setAttribute("aria-expanded",String(open[id])); document.getElementById(id).hidden=!open[id]; return; }
-  const tab=ev.target.closest(".tab");
-  if(tab){
-    const v=tab.dataset.v;
-    document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t===tab)));
-    ["treino","alongar","cuidados"].forEach(k=>document.getElementById("v-"+k).hidden=(k!==v));
-    window.scrollTo(0,0);
-  }
+  const t=ev.target.closest("[data-day],[data-open],[data-swap],[data-use],[data-undo],[data-st]");
+  if(!t) return;
+  if(t.dataset.day!==undefined){ const i=+t.dataset.day; if(i!==cur){ cur=i; openId=null; swapOpen={}; stOpen=false; render(); window.scrollTo({top:0}); } return; }
+  if(t.dataset.open){ const k=t.dataset.open; openId = openId===k?null:k; render(); return; }
+  if(t.dataset.swap){ const k=t.dataset.swap; swapOpen[k]=!swapOpen[k]; render(); return; }
+  if(t.dataset.use){ chosen[t.dataset.use]=t.dataset.name; swapOpen[t.dataset.use]=false; render(); return; }
+  if(t.dataset.undo){ delete chosen[t.dataset.undo]; render(); return; }
+  if(t.hasAttribute("data-st")){ stOpen=!stOpen; render(); return; }
 });
-render(false);
+render();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{});});}
 })();
 </script>
