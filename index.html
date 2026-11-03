@@ -158,10 +158,10 @@ const yt = n => VIDEOS[n] || "https://www.youtube.com/results?search_query=" + e
 const X = (tag,s,r,c,o,alt) => ({tag,s,r,c,o,alt});
 const SAME = n => [n,n,n];
 
-const CORE_FRONT = X("Barriga","3 × 15 (prancha: 30 s)",45,"Movimento curto e lento. A força vem da barriga, não dos braços nem do pescoço.",
+const CORE_FRONT = X("Barriga","3 × 15 (prancha: 30 s)",60,"Movimento curto e lento. A força vem da barriga, não dos braços nem do pescoço.",
   ["Abdominal na máquina","Abdominal na polia, ajoelhado","Prancha frontal, 30 s"],
   ["Prancha frontal com joelhos apoiados, 30 s","Abdominal curto no colchonete"]);
-const CORE_SIDE = X("Lados da cintura","3 × 12 cada lado (prancha: 20 a 30 s)",45,"Quadril parado e barriga firme. Trabalha os lados da cintura e protege a lombar.",
+const CORE_SIDE = X("Lados da cintura","3 × 12 cada lado (prancha: 20 a 30 s)",60,"Quadril parado e barriga firme. Trabalha os lados da cintura e protege a lombar.",
   ["Prancha lateral, 20 a 30 s","Pallof no cabo","Lenhador leve no cabo"],
   ["Prancha lateral com joelho apoiado","Pallof com elástico"]);
 
@@ -171,20 +171,20 @@ const DAYS = [
   ex:[
    X("Peito","3 × 15",60,"Desça em 3 s e segure 1 s com o peito alongado. Escápulas encostadas no banco.",SAME("Supino reto na máquina"),["Supino reto no Smith, leve","Crossover na polia média","Supino reto com halteres leves"]),
    X("Peito superior","3 × 15",60,"Banco a uns 30°. Cotovelos um pouco abaixo da linha do ombro.",["Supino inclinado na máquina","Supino inclinado no Smith","Supino inclinado na máquina"],["Supino inclinado no Smith","Crossover na polia baixa","Supino inclinado com halteres leves"]),
-   X("Peito","3 × 15–20",45,"Braços levemente dobrados. Segure 2 s com os braços fechados.",SAME("Voador"),["Crossover na polia média","Crossover na polia alta","Crucifixo com halteres leves no banco"]),
-   X("Peito","3 × 15–20",45,"Movimento lento, sem jogar o corpo.",["Crossover na polia alta","Crossover na polia baixa","Crossover na polia média"],["Voador","Flexão inclinada com as mãos no banco"]),
-   X("Tríceps","3 × 15–20",45,"Cotovelos colados ao corpo. Segure 1 s com o braço esticado.",["Tríceps na polia com corda","Tríceps na polia com barra","Tríceps na polia com corda"],["Tríceps na máquina sentado","Tríceps coice com halter leve"]),
-   X("Tríceps","3 × 15–20",45,"Carga leve. Pare se o ombro ou o cotovelo incomodar.",["Tríceps francês na polia","Tríceps na máquina sentado","Tríceps francês na polia"],["Tríceps francês com halter leve, sentado","Tríceps coice com halter leve"])
+   X("Peito","3 × 15–20",60,"Braços levemente dobrados. Segure 2 s com os braços fechados.",SAME("Voador"),["Crossover na polia média","Crossover na polia alta","Crucifixo com halteres leves no banco"]),
+   X("Peito","3 × 15–20",60,"Movimento lento, sem jogar o corpo.",["Crossover na polia alta","Crossover na polia baixa","Crossover na polia média"],["Voador","Flexão inclinada com as mãos no banco"]),
+   X("Tríceps","3 × 15–20",60,"Cotovelos colados ao corpo. Segure 1 s com o braço esticado.",["Tríceps na polia com corda","Tríceps na polia com barra","Tríceps na polia com corda"],["Tríceps na máquina sentado","Tríceps coice com halter leve"]),
+   X("Tríceps","3 × 15–20",60,"Carga leve. Pare se o ombro ou o cotovelo incomodar.",["Tríceps francês na polia","Tríceps na máquina sentado","Tríceps francês na polia"],["Tríceps francês com halter leve, sentado","Tríceps coice com halter leve"])
   ]},
  {k:"ter",day:"Ter",short:"Perna",c:"blue",title:"Perna frontal e panturrilha",
   st:[["Flexor do quadril em pé, passada curta","2 × 30 s cada lado"],["Panturrilha na parede","2 × 30 s cada lado"]],
   ex:[
    X("Frente da coxa","3 × 15",60,"Joelho até 90°, nunca mais fundo. Lombar no encosto. Desça em 3 s.",["Leg press 45°","Leg press horizontal","Leg press 45°"],["Leg press horizontal","Hack machine leve, até 90°","Leg press unilateral leve"]),
    X("Frente da coxa","3 × 15",60,"Costas apoiadas. Desça só até 90° e suba sem travar o joelho.",SAME("Hack machine leve, até 90°"),["Leg press horizontal","Sentar e levantar do banco","Cadeirinha alta na parede, 30 s"]),
-   X("Frente da coxa","3 × 15–20",45,"Segure 2 s com a perna esticada. Volte devagar.",SAME("Cadeira extensora"),["Leg press com pés baixos, leve","Sentar e levantar do banco"]),
-   X("Frente da coxa","3 × 15 cada perna",45,"Bem leve, uma perna por vez, com pausa de 2 s no alto.",SAME("Cadeira extensora unilateral"),["Cadeirinha alta na parede, 30 s","Leg press unilateral leve"]),
-   X("Panturrilha","3 × 20",45,"Suba devagar e segure 2 s lá em cima.",SAME("Panturrilha sentado"),["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
-   X("Panturrilha","3 × 20",45,"Carga leve e coluna reta. Se a lombar reclamar, use uma troca.",["Panturrilha em pé na máquina","Panturrilha no leg press","Panturrilha unilateral em pé"],["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo"])
+   X("Frente da coxa","3 × 15–20",60,"Segure 2 s com a perna esticada. Volte devagar.",SAME("Cadeira extensora"),["Leg press com pés baixos, leve","Sentar e levantar do banco"]),
+   X("Frente da coxa","3 × 15 cada perna",60,"Bem leve, uma perna por vez, com pausa de 2 s no alto.",SAME("Cadeira extensora unilateral"),["Cadeirinha alta na parede, 30 s","Leg press unilateral leve"]),
+   X("Panturrilha","3 × 20",60,"Suba devagar e segure 2 s lá em cima.",SAME("Panturrilha sentado"),["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
+   X("Panturrilha","3 × 20",60,"Carga leve e coluna reta. Se a lombar reclamar, use uma troca.",["Panturrilha em pé na máquina","Panturrilha no leg press","Panturrilha unilateral em pé"],["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo"])
   ]},
  {k:"qua",day:"Qua",short:"Costas",c:"yellow",title:"Costas, bíceps e antebraço",
   st:[["Gato e camelo, de quatro","10 movimentos lentos"],["Antebraço e punho","2 × 30 s cada lado"]],
@@ -192,9 +192,9 @@ const DAYS = [
    X("Costas","3 × 15",60,"Use fita de pegada. Puxe até o queixo, sem jogar o corpo, e segure 1 s.",SAME("Puxada na frente no pulley"),["Puxada com triângulo","Puxada na máquina articulada"]),
    X("Costas","3 × 15",60,"Fita de pegada. O apoio no peito tira a carga da lombar.",SAME("Remada com apoio no peito"),["Remada máquina articulada","Remada baixa no cabo","Remada unilateral no cabo, sentado"]),
    X("Costas","3 × 15",60,"Tronco parado, sem balançar. Aperte as escápulas por 1 s.",SAME("Remada baixa no cabo"),["Remada unilateral no cabo, sentado","Pulldown com braços estendidos"]),
-   X("Bíceps","3 × 15–20",45,"Pegada neutra poupa o antebraço. Suba e desça devagar.",SAME("Rosca martelo na corda"),["Rosca martelo com halteres leves","Rosca Scott na máquina","Rosca inclinada com halteres leves"]),
-   X("Bíceps","3 × 15–20",45,"Cotovelos parados ao lado do corpo.",["Rosca na polia com barra W","Rosca Scott na máquina","Rosca alternada com halteres leves"],["Rosca Scott na máquina","Rosca alternada com halteres leves"]),
-   X("Antebraço","2 × 15",45,"Bem leve. Seu antebraço já trabalha muito no teclado: pare se doer.",["Rosca inversa na polia, leve","Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"],["Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"])
+   X("Bíceps","3 × 15–20",60,"Pegada neutra poupa o antebraço. Suba e desça devagar.",SAME("Rosca martelo na corda"),["Rosca martelo com halteres leves","Rosca Scott na máquina","Rosca inclinada com halteres leves"]),
+   X("Bíceps","3 × 15–20",60,"Cotovelos parados ao lado do corpo.",["Rosca na polia com barra W","Rosca Scott na máquina","Rosca alternada com halteres leves"],["Rosca Scott na máquina","Rosca alternada com halteres leves"]),
+   X("Antebraço","2 × 15",60,"Bem leve. Seu antebraço já trabalha muito no teclado: pare se doer.",["Rosca inversa na polia, leve","Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"],["Flexão de punho com halter leve","Segurar halteres leves parado, 20 s"])
   ]},
  {k:"qui",day:"Qui",short:"Perna",c:"green",title:"Perna posterior e panturrilha",
   st:[["Posterior de coxa deitado, com toalha","2 × 30 s cada perna"],["Figura 4 deitado","2 × 30 s cada lado"]],
@@ -202,19 +202,19 @@ const DAYS = [
    X("Posterior da coxa","3 × 15",60,"Quadril firme no banco. Volte em 3 s.",SAME("Mesa flexora"),["Cadeira flexora sentada","Flexora em pé, uma perna","Flexão de joelho com caneleira, em pé"]),
    X("Posterior da coxa","3 × 15",60,"Segure 1 s com a perna dobrada. Lombar apoiada.",SAME("Cadeira flexora sentada"),["Mesa flexora","Flexão de joelho com caneleira, em pé","Flexora em pé, uma perna"]),
    X("Glúteo e posterior","3 × 15",60,"Pés no alto da plataforma. Joelho até 90°, lombar no encosto.",["Leg press 45° com pés altos","Leg press horizontal com pés altos","Leg press 45° com pés altos"],["Leg press horizontal com pés altos","Ponte de glúteo no colchonete"]),
-   X("Glúteo lateral","3 × 20",45,"Costas apoiadas. Abra devagar e segure 2 s aberto.",SAME("Cadeira abdutora"),["Abdução no cabo, em pé","Abdução deitado de lado com elástico"]),
-   X("Panturrilha","3 × 20",45,"Sem carga nos ombros, poupa a coluna. Pausa de 2 s no alto.",SAME("Panturrilha no leg press"),["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
-   X("Panturrilha","3 × 20",45,"Suba devagar, desça devagar.",["Panturrilha sentado","Panturrilha unilateral em pé","Panturrilha sentado"],["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo"])
+   X("Glúteo lateral","3 × 20",60,"Costas apoiadas. Abra devagar e segure 2 s aberto.",SAME("Cadeira abdutora"),["Abdução no cabo, em pé","Abdução deitado de lado com elástico"]),
+   X("Panturrilha","3 × 20",60,"Sem carga nos ombros, poupa a coluna. Pausa de 2 s no alto.",SAME("Panturrilha no leg press"),["Panturrilha sentado","Panturrilha em pé apoiado, só peso do corpo","Panturrilha unilateral em pé"]),
+   X("Panturrilha","3 × 20",60,"Suba devagar, desça devagar.",["Panturrilha sentado","Panturrilha unilateral em pé","Panturrilha sentado"],["Panturrilha no leg press","Panturrilha em pé apoiado, só peso do corpo"])
   ]},
  {k:"sex",day:"Sex",short:"Ombro",c:"white",title:"Ombro e trapézio",
   st:[["Trapézio, inclinando a cabeça","2 × 30 s cada lado"],["Ombro cruzado na frente do peito","2 × 30 s cada braço"]],
   ex:[
    X("Ombro","3 × 15",60,"Costas no encosto. Pare se o ombro fisgar.",SAME("Desenvolvimento na máquina"),["Desenvolvimento com halteres leves, sentado","Desenvolvimento no Smith, sentado, leve"]),
-   X("Ombro lateral","3 × 15–20",45,"Suba até a linha do ombro, sem balançar o corpo.",SAME("Elevação lateral no cabo"),["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral sentado com halteres leves"]),
-   X("Ombro lateral","3 × 15–20",45,"Segure 2 s lá em cima. Carga bem leve.",["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral na máquina"],["Elevação lateral com halteres leves","Elevação lateral no cabo","Elevação lateral sentado com halteres leves"]),
-   X("Ombro posterior","3 × 15–20",45,"Parte de trás do ombro. Corrige ombro caído para a frente.",SAME("Crucifixo invertido na máquina"),["Crucifixo invertido no cabo","Face pull na corda"]),
-   X("Trapézio","3 × 15",45,"Fita de pegada. Suba os ombros sem girar e segure 2 s.",["Encolhimento no Smith","Encolhimento com halteres","Encolhimento na polia baixa"],["Encolhimento com halteres","Encolhimento na polia baixa"]),
-   X("Trapézio médio","3 × 15",45,"Cotovelos altos. Aperte as escápulas e segure 1 s.",SAME("Remada aberta na máquina"),["Face pull na corda","Crucifixo invertido no cabo"])
+   X("Ombro lateral","3 × 15–20",60,"Suba até a linha do ombro, sem balançar o corpo.",SAME("Elevação lateral no cabo"),["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral sentado com halteres leves"]),
+   X("Ombro lateral","3 × 15–20",60,"Segure 2 s lá em cima. Carga bem leve.",["Elevação lateral na máquina","Elevação lateral com halteres leves","Elevação lateral na máquina"],["Elevação lateral com halteres leves","Elevação lateral no cabo","Elevação lateral sentado com halteres leves"]),
+   X("Ombro posterior","3 × 15–20",60,"Parte de trás do ombro. Corrige ombro caído para a frente.",SAME("Crucifixo invertido na máquina"),["Crucifixo invertido no cabo","Face pull na corda"]),
+   X("Trapézio","3 × 15",60,"Fita de pegada. Suba os ombros sem girar e segure 2 s.",["Encolhimento no Smith","Encolhimento com halteres","Encolhimento na polia baixa"],["Encolhimento com halteres","Encolhimento na polia baixa"]),
+   X("Trapézio médio","3 × 15",60,"Cotovelos altos. Aperte as escápulas e segure 1 s.",SAME("Remada aberta na máquina"),["Face pull na corda","Crucifixo invertido no cabo"])
   ]}
 ];
 
@@ -259,7 +259,7 @@ function exHTML(e,key,i,used){
   return `<li class="ex${isOpen?" open":""}">
     <button class="row" data-open="${key}" aria-expanded="${isOpen}">
       <span class="num">${i+1}</span>
-      <span class="tx"><b>${esc(name)}</b><span>${esc(e.s)}, descanso ${e.r} s</span>${swapped?`<em>no lugar de ${esc(e.main)}</em>`:""}</span>
+      <span class="tx"><b>${esc(name)}</b><span>${esc(e.s)}, descanso 1 min</span>${swapped?`<em>no lugar de ${esc(e.main)}</em>`:""}</span>
       ${I_CHEV}
     </button>
     ${isOpen?`<div class="body">
