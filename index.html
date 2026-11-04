@@ -75,6 +75,21 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;paddin
 .how{margin:0;font-size:14px;color:var(--soft)}
 .how b{color:var(--fg)}
 
+/* Barra do ritmo previsto */
+.pace{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:10px 16px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.pbar{position:relative;display:flex;gap:3px;height:12px}
+.pbar i{border-radius:6px;opacity:.3}
+.pbar i.done{opacity:1}
+.pbar .mk{position:absolute;top:-5px;bottom:-5px;width:4px;border-radius:2px;background:var(--fg);transform:translateX(-50%);transition:left .8s ease}
+.pinfo{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px}
+.pinfo span{font-size:14px;color:var(--soft);min-width:0}
+.pinfo b{color:var(--fg)}
+.pbtn{flex:none;min-height:44px;padding-inline:14px;border-radius:12px;font-weight:700;font-size:14px;background:var(--fg);color:var(--bg)}
+.pbtn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.now{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:10px;background:var(--c);color:#fff;font-size:12px;font-weight:700;vertical-align:2px;font-variation-settings:"wdth" 100}
+.app[data-c="yellow"] .now,.app[data-c="white"] .now{color:#15191C}
+.app[data-c="white"] .now{box-shadow:inset 0 0 0 1.5px var(--fg)}
+
 /* Linha do tempo */
 .tl{list-style:none;margin:0;padding:0}
 .st{display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:12px;scroll-margin-top:10px}
@@ -141,6 +156,7 @@ details[open] summary::after{content:"−"}
     <div class="head-top"><b id="dayname">Quarta</b><span id="blockinfo"></span></div>
     <h1 id="title">Costas, bíceps e antebraço</h1>
   </header>
+  <section class="pace" id="pace" aria-label="Ritmo previsto do treino"></section>
   <p class="how"><b>Como fazer:</b> carga leve, descida em 3 s e pausa de 1 a 2 s onde o músculo mais trabalha. Termine cada série com folga, nunca até a falha. Descanso de 1 min entre as séries.</p>
   <ol class="tl" id="tl"></ol>
   <details>
@@ -187,12 +203,12 @@ function blockInfo(){
 function todayIndex(){ const wd=new Date().getDay(); return wd>=1&&wd<=5 ? wd-1 : -1; }
 
 /* ---------- estado (guardado só no aparelho, vale para o dia) ---------- */
-let todayIdx=todayIndex(), cur=todayIdx>=0?todayIdx:0, openId=null, swapOpen={}, chosen={}, stamp=dayKey(today0());
+let todayIdx=todayIndex(), cur=todayIdx>=0?todayIdx:0, openId=null, swapOpen={}, chosen={}, stamp=dayKey(today0()), startAt=null, armReset=false, plan=[];
 try{
   const sv=JSON.parse(localStorage.getItem(KEY)||"null");
-  if(sv && sv.stamp===stamp){ chosen=sv.chosen||{}; openId=sv.openId||null; if(typeof sv.cur==="number") cur=sv.cur; }
+  if(sv && sv.stamp===stamp){ chosen=sv.chosen||{}; openId=sv.openId||null; if(typeof sv.cur==="number") cur=sv.cur; if(typeof sv.startAt==="number") startAt=sv.startAt; }
 }catch(e){}
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify({stamp,chosen,openId,cur})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({stamp,chosen,openId,cur,startAt})); }catch(e){} }
 
 /* ---------- montagem ---------- */
 function slotsFor(D,B){
@@ -211,6 +227,12 @@ function minutesOf(e,name){
   let work = /\d+ s/.test(r) ? (/20 a 30 s|30 s/.test(r)?0.5:0.4) : 1;
   if(lados) work*=2;
   return Math.max(2,Math.round(e.n*(work+1)));
+}
+function planMinutes(e,name){
+  const r=repsOf(e,name), lados=/cada (braço|perna|lado)/.test(r);
+  let work = /\d+ s/.test(r) ? 0.5 : 1;
+  if(lados) work*=2;
+  return e.n*(work+1)+0.5;
 }
 function altsOf(e,others){
   const now=nameOf(e);
@@ -259,6 +281,10 @@ function render(){
   document.getElementById("title").textContent=D.title;
 
 
+  plan=[{key:"warm",name:"Aquecimento",min:WARM_MIN,color:"var(--warm)"}]
+    .concat(S.main.map(e=>({key:e.key,name:nameOf(e),min:planMinutes(e,nameOf(e)),color:"var(--c)"})))
+    .concat(S.core.map(e=>({key:e.key,name:nameOf(e),min:planMinutes(e,nameOf(e)),color:"var(--core)"})))
+    .concat([{key:"stretch",name:"Alongamento",min:STRETCH_MIN,color:"var(--stretch)"}]);
   let t=0, h="";
   const warmOpen=openId==="warm";
   h+=stepShell("warm",t,"warm","var(--warm)",
@@ -274,7 +300,33 @@ function render(){
   t+=STRETCH_MIN;
   h+=`<li class="st" data-kind="end" style="--k:var(--muted)"><span class="rail" aria-hidden="true"><i></i></span><div class="content"><div class="row"><span class="tx"><b>Fim</b><span>Depois, a sua caminhada</span></span></div></div></li>`;
   document.getElementById("tl").innerHTML=h;
+  tickPace();
 }
+
+/* barra que anda conforme o tempo previsto (sem cronômetro na tela) */
+function tickPace(){
+  const el=document.getElementById("pace"); if(!el||!plan.length) return;
+  const total=plan.reduce((s,p)=>s+p.min,0);
+  const running = startAt!==null && cur===todayIdx;
+  const elapsed = running ? Math.max(0,(Date.now()-startAt)/60000) : 0;
+  let acc=0, nowStep=null;
+  const segs=plan.map(p=>{ const a=acc; acc+=p.min; const done=running && elapsed>=a; if(running && elapsed>=a && elapsed<acc) nowStep=p; return `<i class="${done?"done":""}" style="flex:${p.min};background:${p.color}"></i>`; }).join("");
+  const frac=Math.min(1,elapsed/total);
+  let info, btn;
+  if(cur!==todayIdx){
+    info=`<span>A barra anda no treino do dia.</span>`; btn="";
+  } else if(!running){
+    info=`<span>Toque em começar e a barra anda junto com o treino previsto.</span>`;
+    btn=`<button class="pbtn" data-pace="start">Começar treino</button>`;
+  } else {
+    info = elapsed>=total ? `<span><b>Treino previsto concluído.</b> Agora, a caminhada.</span>` : `<span>Pelo previsto, agora: <b>${esc(nowStep?nowStep.name:"")}</b></span>`;
+    btn = `<button class="pbtn ghost" data-pace="reset">${armReset?"Toque de novo":"Recomeçar"}</button>`;
+  }
+  el.innerHTML=`<div class="pbar" role="progressbar" aria-label="Andamento previsto do treino" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(frac*100)}">${segs}${running?`<span class="mk" style="left:${(frac*100).toFixed(2)}%"></span>`:""}</div><div class="pinfo">${info}${btn}</div>`;
+  document.querySelectorAll(".now").forEach(x=>x.remove());
+  if(nowStep){ const b=document.querySelector(`#st-${CSS.escape(nowStep.key)} .row .tx b`); if(b) b.insertAdjacentHTML("beforeend",'<span class="now">previsto agora</span>'); }
+}
+setInterval(tickPace,15000);
 
 function refocus(attr,val){
   if(!attr) return;
@@ -287,8 +339,13 @@ function scrollToStep(k){
 }
 
 document.addEventListener("click",ev=>{
-  const t=ev.target.closest("[data-day],[data-open],[data-swap],[data-use],[data-undo]");
+  const t=ev.target.closest("[data-day],[data-open],[data-swap],[data-use],[data-undo],[data-pace]");
   if(!t) return;
+  if(t.dataset.pace==="start"){ startAt=Date.now(); armReset=false; save(); tickPace(); return; }
+  if(t.dataset.pace==="reset"){
+    if(!armReset){ armReset=true; tickPace(); setTimeout(()=>{ armReset=false; tickPace(); },4000); return; }
+    startAt=null; armReset=false; save(); tickPace(); return;
+  }
   if(t.dataset.day!==undefined){
     const i=+t.dataset.day; if(i===cur) return;
     cur=i; openId=null; swapOpen={}; save(); render(); refocus("data-day",String(i)); window.scrollTo({top:0}); return;
@@ -311,7 +368,8 @@ document.addEventListener("click",ev=>{
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible") return;
   const k=dayKey(today0());
-  if(k!==stamp){ stamp=k; todayIdx=todayIndex(); cur=todayIdx>=0?todayIdx:0; openId=null; swapOpen={}; chosen={}; save(); render(); }
+  if(k!==stamp){ stamp=k; todayIdx=todayIndex(); cur=todayIdx>=0?todayIdx:0; openId=null; swapOpen={}; chosen={}; startAt=null; save(); render(); }
+  else tickPace();
   if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration) navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{});
 });
 

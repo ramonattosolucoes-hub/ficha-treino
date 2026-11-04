@@ -1,4 +1,4 @@
-const CACHE = "ficha-treino-v5";
+const CACHE = "ficha-treino-v6";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 const APP_PATHS = new Set(["/ficha-treino/", "/ficha-treino/index.html"]);
 const TIMEOUT_MS = 3000;
