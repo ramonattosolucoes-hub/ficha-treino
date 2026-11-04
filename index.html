@@ -14,28 +14,30 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
 <style>
 /*
-  Layout: lista compacta. Dias em pílulas no topo; título do dia; como fazer; alongamento do dia recolhido;
-  musculação e cintura em listas onde só o exercício tocado abre (execução, cuidados, vídeo, trocas).
+  Layout: linha do treino. Dias em pílulas no topo; cabeçalho com o dia e o bloco;
+  uma linha vertical com a sequência das etapas (aquecer, musculação, cintura, alongar). Só a etapa tocada abre.
   Identidade: cada dia tem a cor de uma anilha olímpica (tons escurecidos para leitura).
 */
 :root{
-  --bg:#E9ECEA; --surface:#FFFFFF; --surface-2:#F1F3F2; --line:#D3D8D5; --open:#F7F8F7;
+  --bg:#E9ECEA; --surface:#FFFFFF; --surface-2:#F1F3F2; --line:#D3D8D5; --rail:#C9CFCC;
   --fg:#15191C; --muted:#535D63; --soft:#2E363B;
   --red:#B5302A; --blue:#2558B8; --yellow:#E2AE1E; --green:#18774A; --white:#F7F7F3;
-  --warn:#B5302A;
+  --warm:#7C868C; --core:#3D4A52; --stretch:#2F6E9E; --warn:#B5302A;
   --sans:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#3A444C; --open:#283036;
-    --fg:#ECEFEE; --muted:#A3AEB4; --soft:#CDD5D9; --warn:#F07B6F;
+    --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#3A444C; --rail:#3A444C;
+    --fg:#ECEFEE; --muted:#A3AEB4; --soft:#CDD5D9;
+    --warm:#6A757B; --core:#CDD5D9; --stretch:#7FA7D9; --warn:#F07B6F;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#3A444C; --open:#283036;
-  --fg:#ECEFEE; --muted:#A3AEB4; --soft:#CDD5D9; --warn:#F07B6F;
+  --bg:#1A1F23; --surface:#232A2F; --surface-2:#2B3338; --line:#3A444C; --rail:#3A444C;
+  --fg:#ECEFEE; --muted:#A3AEB4; --soft:#CDD5D9;
+  --warm:#6A757B; --core:#CDD5D9; --stretch:#7FA7D9; --warn:#F07B6F;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -46,62 +48,54 @@ body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.45 var(--sans
 a{color:inherit}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:8px}
-.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:grid;gap:16px}
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:grid;gap:14px}
 
 /* Dias */
-.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px}
-.days::-webkit-scrollbar{display:none}
-.day{flex:none;position:relative;display:grid;gap:1px;min-width:66px;min-height:56px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.day{position:relative;display:grid;justify-items:center;gap:0;min-height:56px;padding:7px 4px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
 .day b{font-size:15px;font-weight:700}
-.day span{font-size:13px;color:var(--muted)}
+.day span{font-size:12px;color:var(--muted)}
 .day[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
 .day[aria-pressed="true"] span{color:inherit}
 .day[data-c="yellow"][aria-pressed="true"]{color:#15191C}
 .day[data-c="white"][aria-pressed="true"]{color:#15191C;border:2px solid var(--fg)}
-.day .dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:currentColor}
+.day .dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:currentColor}
 
-/* Cabeçalho do dia */
-.head h1{margin:0;font-size:36px;line-height:1;font-weight:800;font-variation-settings:"wdth" 72;letter-spacing:-.01em;text-wrap:balance}
-.head p{margin:6px 0 0;font-size:15px;color:var(--muted)}
-.how{margin:0;font-size:15px;color:var(--soft);background:var(--surface);border-radius:14px;padding:12px 14px;display:grid;gap:6px}
-.how p{margin:0}
-.how b{font-weight:700;color:var(--fg)}
+/* Cabeçalho */
+.head{display:grid;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.head-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.head-top b{font-size:15px;font-weight:700;color:var(--fg)}
+.head-top span{font-size:13px;color:var(--muted)}
+.head h1{margin:0;font-size:32px;line-height:1;font-weight:800;font-variation-settings:"wdth" 72;letter-spacing:-.01em;text-wrap:balance}
+.bar{display:flex;gap:3px;height:9px}
+.bar i{border-radius:5px}
+.legend{display:flex;justify-content:space-between;gap:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:8px;height:8px;border-radius:2px;flex:none}
+.how{margin:0;font-size:14px;color:var(--soft)}
+.how b{color:var(--fg)}
 
-/* Alongamento */
-.stretch{background:var(--surface);border-radius:14px}
-.stretch>button{width:100%;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 14px;border-radius:14px}
-.stretch .tx{flex:1;display:grid;min-width:0}
-.stretch .tx b{font-size:16px;font-weight:600}
-.stretch .tx span{font-size:13px;color:var(--muted)}
-.chev{width:16px;height:16px;flex:none;color:var(--muted);transition:transform .2s}
-[aria-expanded="true"] .chev{transform:rotate(180deg);color:var(--fg)}
-.st-list{border-top:1px solid var(--line);padding:6px 14px 12px;display:grid;gap:6px}
-.st-item{display:flex;align-items:center;gap:10px;min-height:48px}
-.st-item div{flex:1;display:grid}
-.st-item small{font-size:13px;color:var(--muted)}
-.st-block{display:grid;gap:8px;padding-block:4px 8px}
-.st-block+.st-block{border-top:1px solid var(--line);padding-top:12px}
-
-/* Listas */
-h2{margin:6px 0 -6px;font-size:20px;font-weight:800;font-variation-settings:"wdth" 75}
-.list{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:16px}
-.ex{scroll-margin-top:12px}
-.ex+.ex{border-top:1px solid var(--line)}
-.ex:first-child{border-radius:16px 16px 0 0}.ex:last-child{border-radius:0 0 16px 16px}.ex:only-child{border-radius:16px}
-.ex.open{background:var(--open);box-shadow:inset 4px 0 0 var(--c)}
-.app[data-c="white"] .ex.open{box-shadow:inset 4px 0 0 var(--muted)}
-.row{width:100%;display:flex;align-items:center;gap:12px;min-height:64px;padding:9px 14px}
-.row:focus-visible{outline-offset:-3px}
-.num{width:30px;height:30px;flex:none;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
-.ex.open .num{background:var(--c);color:#fff}
-.app[data-c="white"] .ex.open .num,.app[data-c="yellow"] .ex.open .num{color:#15191C}
-.app[data-c="white"] .ex.open .num{box-shadow:inset 0 0 0 2px var(--fg)}
+/* Linha do tempo */
+.tl{list-style:none;margin:0;padding:0}
+.st{display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:12px;scroll-margin-top:10px}
+.rail{display:flex;flex-direction:column;align-items:center}
+.rail::before{content:"";width:2px;height:16px;background:var(--rail)}
+.st:first-child .rail::before{background:transparent}
+.rail i{width:12px;height:12px;border-radius:50%;background:var(--k);flex:none}
+.rail::after{content:"";flex:1;width:2px;background:var(--rail)}
+.st:last-child .rail::after{background:transparent}
+.st.open .rail i{width:16px;height:16px;box-shadow:0 0 0 4px color-mix(in srgb,var(--k) 28%,transparent)}
+.app[data-c="white"] .st[data-kind="ex"] .rail i{box-shadow:inset 0 0 0 2px var(--fg)}
+.content{min-width:0;padding-bottom:6px}
+.row{width:100%;display:flex;align-items:center;gap:10px;min-height:58px;padding:6px 0}
 .row .tx{flex:1;display:grid;min-width:0}
 .row .tx b{font-size:17px;font-weight:600;line-height:1.25}
-.ex.open .row .tx b{font-weight:700}
-.row .tx span{font-size:15px;color:var(--soft);font-variant-numeric:tabular-nums}
+.st.open .row .tx b{font-weight:700;font-size:18px}
+.row .tx span{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums}
 .row .tx em{font-style:normal;font-size:13px;color:var(--muted)}
-.body{padding:0 14px 16px 56px;display:grid;gap:12px}
+.chev{width:16px;height:16px;flex:none;color:var(--muted);transition:transform .2s}
+[aria-expanded="true"] .chev{transform:rotate(180deg);color:var(--fg)}
+.body{background:var(--surface);border-radius:16px;padding:14px;margin-bottom:10px;display:grid;gap:12px}
 .guide{display:grid;gap:6px}
 .gt{margin:0;font-size:14px;font-weight:700;color:var(--fg)}
 .how-l,.care-l{margin:0 0 4px;padding-left:20px;display:grid;gap:4px;font-size:15px;line-height:1.45;color:var(--soft)}
@@ -110,7 +104,7 @@ h2{margin:6px 0 -6px;font-size:20px;font-weight:800;font-variation-settings:"wdt
 .btn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding-inline:16px;border-radius:12px;font-weight:600;font-size:15px;text-decoration:none}
 .btn svg{width:14px;height:14px;flex:none}
 .btn-play{background:var(--fg);color:var(--bg)}
-.btn-line{border:1px solid var(--line);background:var(--surface)}
+.btn-line{border:1px solid var(--line);background:var(--surface-2)}
 .btn-line[aria-expanded="true"]{border-color:var(--fg)}
 .swaps{display:grid;gap:6px}
 .swaps p{margin:0;font-size:14px;color:var(--muted)}
@@ -120,6 +114,12 @@ h2{margin:6px 0 -6px;font-size:20px;font-weight:800;font-variation-settings:"wdt
 .swap a{color:var(--muted)}
 .swap button{border:1px solid var(--line);background:var(--surface)}
 .undo{justify-self:start;display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:underline}
+.plain{font-size:15px;color:var(--soft);margin:0}
+.st-item{display:flex;align-items:center;gap:10px;min-height:48px}
+.st-item div{flex:1;display:grid}
+.st-item small{font-size:13px;color:var(--muted)}
+.st-block{display:grid;gap:8px}
+.st-block+.st-block{border-top:1px solid var(--line);padding-top:12px}
 
 /* Cuidados */
 details{background:var(--surface);border-radius:14px;padding:2px 14px}
@@ -137,16 +137,12 @@ details[open] summary::after{content:"−"}
 <body>
 <div class="app" id="app">
   <nav class="days" id="days" aria-label="Dia da semana"></nav>
-  <header class="head"><h1 id="title">Peito e tríceps</h1><p id="sub"></p></header>
-  <div class="how">
-    <p><b>Antes de começar:</b> 5 min de bike leve. A primeira série de cada exercício é com metade da carga.</p>
-    <p><b>Como fazer:</b> carga leve, descida em 3 segundos e pausa de 1 a 2 segundos onde o músculo mais trabalha. Termine cada série com folga, nunca até a falha. Descanso de 1 minuto.</p>
-  </div>
-  <section class="stretch" id="stretch"></section>
-  <h2>Musculação</h2>
-  <ol class="list" id="main"></ol>
-  <h2>Barriga e cintura</h2>
-  <ol class="list" id="core"></ol>
+  <header class="head">
+    <div class="head-top"><b id="dayname">Quarta</b><span id="blockinfo"></span></div>
+    <h1 id="title">Costas, bíceps e antebraço</h1>
+  </header>
+  <p class="how"><b>Como fazer:</b> carga leve, descida em 3 s e pausa de 1 a 2 s onde o músculo mais trabalha. Termine cada série com folga, nunca até a falha. Descanso de 1 min entre as séries.</p>
+  <ol class="tl" id="tl"></ol>
   <details>
     <summary>Sinais para parar</summary>
     <ul class="safe">
@@ -169,25 +165,21 @@ const GUIDE = {"Abdominal na máquina": {"how": ["Sente com as costas no encosto
 const VIDEOS = {"Supino reto na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Supino+reto+na+maquina", "Supino reto no Smith, leve": "https://www.youtube.com/results?search_query=Leandro+Twin+Supino+reto+no+Smith", "Supino reto com halteres leves": "https://www.youtube.com/results?search_query=Laercio+Refundini+Supino+reto+com+halteres", "Supino inclinado na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Supino+inclinado+na+maquina", "Supino inclinado no Smith": "https://www.youtube.com/results?search_query=Leandro+Twin+Supino+inclinado+no+Smith", "Supino inclinado com halteres leves": "https://www.youtube.com/watch?v=G-i3jMIbDmo", "Voador": "https://www.youtube.com/results?search_query=Smart+Fit+Voador+peitoral", "Crossover na polia média": "https://www.youtube.com/results?search_query=Laercio+Refundini+Crossover+polia+media", "Crossover na polia alta": "https://www.youtube.com/results?search_query=Smart+Fit+Crossover+polia+alta", "Crossover na polia baixa": "https://www.youtube.com/results?search_query=Leandro+Twin+Crossover+polia+baixa", "Crucifixo com halteres leves no banco": "https://www.youtube.com/results?search_query=Smart+Fit+Crucifixo+com+halteres+no+banco", "Flexão inclinada com as mãos no banco": "https://www.youtube.com/results?search_query=Smart+Fit+Flexao+de+braco+inclinada+banco", "Tríceps na polia com corda": "https://www.youtube.com/watch?v=7le1JRUUagM", "Tríceps na polia com barra": "https://www.youtube.com/results?search_query=Smart+Fit+Triceps+na+polia+com+barra", "Tríceps na máquina sentado": "https://www.youtube.com/results?search_query=Smart+Fit+Triceps+na+maquina", "Tríceps coice com halter leve": "https://www.youtube.com/results?search_query=Laercio+Refundini+Triceps+coice+com+halter", "Tríceps francês na polia": "https://www.youtube.com/results?search_query=Leandro+Twin+Triceps+frances+na+polia", "Tríceps francês com halter leve, sentado": "https://www.youtube.com/results?search_query=Smart+Fit+Triceps+frances+com+halter+sentado", "Leg press 45°": "https://www.youtube.com/watch?v=waAxlYvtCcI", "Leg press horizontal": "https://www.youtube.com/results?search_query=Smart+Fit+Leg+press+horizontal", "Leg press unilateral leve": "https://www.youtube.com/results?search_query=Leandro+Twin+Leg+press+unilateral", "Sentar e levantar do banco": "https://www.youtube.com/results?search_query=Hospital+Albert+Einstein+Sentar+e+levantar+da+cadeira", "Cadeirinha alta na parede, 30 s": "https://www.youtube.com/results?search_query=Rehab+Science+Wall+Sit+Isometric", "Cadeira extensora": "https://www.youtube.com/results?search_query=Smart+Fit+Cadeira+extensora", "Cadeira extensora unilateral": "https://www.youtube.com/results?search_query=Leandro+Twin+Cadeira+extensora+unilateral", "Panturrilha sentado": "https://www.youtube.com/results?search_query=Smart+Fit+Panturrilha+sentado", "Panturrilha no leg press": "https://www.youtube.com/results?search_query=Smart+Fit+Panturrilha+no+leg+press", "Panturrilha em pé apoiado, só peso do corpo": "https://www.youtube.com/results?search_query=Hospital+Albert+Einstein+Panturrilha+em+pe", "Panturrilha unilateral em pé": "https://www.youtube.com/results?search_query=Laercio+Refundini+Panturrilha+unilateral+em+pe", "Puxada na frente no pulley": "https://www.youtube.com/results?search_query=Smart+Fit+Puxada+frente+pulley", "Puxada com triângulo": "https://www.youtube.com/watch?v=uAnrJBnxrZ0", "Puxada na máquina articulada": "https://www.youtube.com/results?search_query=Leandro+Twin+Puxada+articulada", "Remada com apoio no peito": "https://www.youtube.com/results?search_query=Laercio+Refundini+Remada+apoio+no+peito", "Remada máquina articulada": "https://www.youtube.com/results?search_query=Smart+Fit+Remada+maquina+articulada", "Remada baixa no cabo": "https://www.youtube.com/results?search_query=Smart+Fit+Remada+baixa+no+cabo", "Remada unilateral no cabo, sentado": "https://www.youtube.com/results?search_query=Leandro+Twin+Remada+unilateral+no+cabo", "Pulldown com braços estendidos": "https://www.youtube.com/results?search_query=Smart+Fit+Pulldown+polia", "Rosca martelo na corda": "https://www.youtube.com/results?search_query=Leandro+Twin+Rosca+martelo+na+corda", "Rosca martelo com halteres leves": "https://www.youtube.com/results?search_query=Smart+Fit+Rosca+martelo+com+halteres", "Rosca Scott na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Rosca+Scott+na+maquina", "Rosca inclinada com halteres leves": "https://www.youtube.com/results?search_query=Laercio+Refundini+Rosca+inclinada+com+halteres", "Rosca na polia com barra W": "https://www.youtube.com/results?search_query=Leandro+Twin+Rosca+na+polia+barra+W", "Rosca alternada com halteres leves": "https://www.youtube.com/results?search_query=Smart+Fit+Rosca+alternada+com+halteres", "Flexão de punho com halter leve": "https://www.youtube.com/results?search_query=Rehab+Science+Wrist+Flexion+Dumbbell", "Segurar halteres leves parado, 20 s": "https://www.youtube.com/results?search_query=Rehab+Science+Isometric+Grip+Hold+Dumbbell", "Mesa flexora": "https://www.youtube.com/watch?v=8Nat6GRiEoc", "Cadeira flexora sentada": "https://www.youtube.com/results?search_query=Smart+Fit+Cadeira+flexora", "Flexora em pé, uma perna": "https://www.youtube.com/results?search_query=Leandro+Twin+Flexora+em+pe+unilateral", "Flexão de joelho com caneleira, em pé": "https://www.youtube.com/results?search_query=Smart+Fit+Flexao+de+joelho+em+pe+caneleira", "Leg press 45° com pés altos": "https://www.youtube.com/results?search_query=Laercio+Refundini+Leg+press+45+pes+altos", "Leg press horizontal com pés altos": "https://www.youtube.com/results?search_query=Smart+Fit+Leg+press+horizontal+pes+altos", "Ponte de glúteo no colchonete": "https://www.youtube.com/results?search_query=Smart+Fit+Elevacao+pelvica+no+solo", "Cadeira abdutora": "https://www.youtube.com/watch?v=50qHGus1TZk", "Abdução no cabo, em pé": "https://www.youtube.com/results?search_query=Smart+Fit+Abducao+de+quadril+na+polia", "Abdução deitado de lado com elástico": "https://www.youtube.com/results?search_query=Rehab+Science+Sidelying+Hip+Abduction+Band", "Desenvolvimento na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Desenvolvimento+na+maquina", "Desenvolvimento com halteres leves, sentado": "https://www.youtube.com/results?search_query=Smart+Fit+Desenvolvimento+com+halteres+sentado", "Desenvolvimento no Smith, sentado, leve": "https://www.youtube.com/results?search_query=Leandro+Twin+Desenvolvimento+no+Smith+sentado", "Elevação lateral no cabo": "https://www.youtube.com/results?search_query=Smart+Fit+Elevacao+lateral+na+polia", "Elevação lateral na máquina": "https://www.youtube.com/results?search_query=Leandro+Twin+Elevacao+lateral+na+maquina", "Elevação lateral com halteres leves": "https://www.youtube.com/results?search_query=Smart+Fit+Elevacao+lateral+com+halteres", "Elevação lateral sentado com halteres leves": "https://www.youtube.com/results?search_query=Laercio+Refundini+Elevacao+lateral+sentado", "Crucifixo invertido na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Crucifixo+invertido+na+maquina", "Crucifixo invertido no cabo": "https://www.youtube.com/results?search_query=Leandro+Twin+Crucifixo+invertido+no+cabo", "Face pull na corda": "https://www.youtube.com/results?search_query=Laercio+Refundini+Face+pull+na+corda", "Encolhimento no Smith": "https://www.youtube.com/results?search_query=Leandro+Twin+Encolhimento+no+Smith", "Encolhimento com halteres": "https://www.youtube.com/results?search_query=Smart+Fit+Encolhimento+com+halteres", "Encolhimento na polia baixa": "https://www.youtube.com/results?search_query=Leandro+Twin+Encolhimento+na+polia+baixa", "Remada aberta na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Remada+aberta+na+maquina", "Abdominal na máquina": "https://www.youtube.com/results?search_query=Smart+Fit+Abdominal+na+maquina", "Abdominal curto no colchonete": "https://www.youtube.com/results?search_query=Smart+Fit+Abdominal+supra+no+solo", "Prancha frontal, 30 s": "https://www.youtube.com/watch?v=jh0z3gbljUM", "Prancha frontal com joelhos apoiados, 30 s": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Modified+Plank+Knees", "Prancha lateral, 20 a 30 s": "https://www.youtube.com/results?search_query=Smart+Fit+Prancha+lateral", "Prancha lateral com joelho apoiado": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Modified+Side+Plank+Knee", "Pallof no cabo": "https://www.youtube.com/results?search_query=Rehab+Science+Cable+Pallof+Press", "Pallof com elástico": "https://www.youtube.com/results?search_query=Rehab+Science+Band+Pallof+Press", "Peitoral na porta": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Doorway+Chest+Stretch", "Tríceps acima da cabeça": "https://www.youtube.com/results?search_query=Hospital+Albert+Einstein+Alongamento+triceps", "Flexor do quadril em pé, passada curta": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Standing+Hip+Flexor+Stretch", "Panturrilha na parede": "https://www.youtube.com/watch?v=ltH2dnWUnPY", "Gato e camelo, de quatro": "https://www.youtube.com/results?search_query=Rehab+Science+Cat+Camel+Exercise", "Antebraço e punho": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Forearm+Wrist+Stretch", "Posterior de coxa deitado, com toalha": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Supine+Hamstring+Stretch+Towel", "Figura 4 deitado": "https://www.youtube.com/results?search_query=Ask+Doctor+Jo+Supine+Figure+4+Piriformis+Stretch", "Trapézio, inclinando a cabeça": "https://www.youtube.com/results?search_query=Hospital+Albert+Einstein+Alongamento+cervical+trapezio", "Ombro cruzado na frente do peito": "https://www.youtube.com/results?search_query=Hospital+Albert+Einstein+Alongamento+ombro", "Dead bug": "https://www.youtube.com/watch?v=uQfzuKBMJeE", "Pinça com anilhas leves, 15 s": "https://www.youtube.com/results?search_query=pin%C3%A7a+com+anilhas+pinch+grip+antebra%C3%A7o"};
 const REPS = {"Leg press unilateral leve": "12 cada perna", "Cadeira extensora unilateral": "15 cada perna", "Panturrilha unilateral em pé": "15 cada perna", "Flexora em pé, uma perna": "15 cada perna", "Flexão de joelho com caneleira, em pé": "15 cada perna", "Remada unilateral no cabo, sentado": "15 cada braço", "Tríceps coice com halter leve": "15 cada braço", "Abdução no cabo, em pé": "15 cada perna", "Abdução deitado de lado com elástico": "15 cada perna", "Rosca alternada com halteres leves": "15 cada braço", "Segurar halteres leves parado, 20 s": "20 s", "Pinça com anilhas leves, 15 s": "15 s", "Cadeirinha alta na parede, 30 s": "30 s", "Prancha frontal, 30 s": "30 s", "Prancha frontal com joelhos apoiados, 30 s": "30 s", "Prancha lateral, 20 a 30 s": "20 a 30 s cada lado", "Prancha lateral com joelho apoiado": "20 a 30 s cada lado", "Pallof no cabo": "12 cada lado", "Pallof com elástico": "12 cada lado", "Dead bug": "8 cada lado", "Sentar e levantar do banco": "12"};
 const KEY = "ficha-treino-v4";
+const NAMES = ["Segunda","Terça","Quarta","Quinta","Sexta"];
+const WARM_MIN = 5, STRETCH_MIN = 4;
 
 const yt = n => VIDEOS[n] || "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " execução correta");
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit"});
 const I_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>';
 const I_CHEV = '<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
-const I_STRETCH = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;color:var(--muted)"><circle cx="12" cy="4.5" r="1.8"/><path d="M5 9l7 1.5L19 9M12 10.5V15l-3 6M12 15l3 6"/></svg>';
 
 /* ---------- datas ---------- */
 function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
 function dayKey(d){ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-function trainingDate(){ // no fim de semana, vale a próxima segunda
-  const d=today0(), wd=d.getDay();
-  if(wd===6) d.setDate(d.getDate()+2); else if(wd===0) d.setDate(d.getDate()+1);
-  return d;
-}
+function trainingDate(){ const d=today0(), wd=d.getDay(); if(wd===6) d.setDate(d.getDate()+2); else if(wd===0) d.setDate(d.getDate()+1); return d; }
 function blockInfo(){
-  const ref=trainingDate();
-  const days=Math.max(0,Math.round((ref-START)/864e5));
+  const days=Math.max(0,Math.round((trainingDate()-START)/864e5));
   const n=Math.floor(days/14);
   const next=new Date(START); next.setDate(START.getDate()+(n+1)*14);
   return {b:n%3,next};
@@ -195,7 +187,7 @@ function blockInfo(){
 function todayIndex(){ const wd=new Date().getDay(); return wd>=1&&wd<=5 ? wd-1 : -1; }
 
 /* ---------- estado (guardado só no aparelho, vale para o dia) ---------- */
-let todayIdx=todayIndex(), cur=todayIdx>=0?todayIdx:0, openId=null, swapOpen={}, chosen={}, stOpen=false, stamp=dayKey(today0());
+let todayIdx=todayIndex(), cur=todayIdx>=0?todayIdx:0, openId=null, swapOpen={}, chosen={}, stamp=dayKey(today0());
 try{
   const sv=JSON.parse(localStorage.getItem(KEY)||"null");
   if(sv && sv.stamp===stamp){ chosen=sv.chosen||{}; openId=sv.openId||null; if(typeof sv.cur==="number") cur=sv.cur; }
@@ -211,7 +203,15 @@ function slotsFor(D,B){
   };
 }
 const nameOf = e => chosen[e.key]||e.main;
-function setsText(e,name){ return e.n+" × "+(REPS[name]||e.r); }
+const repsOf = (e,name) => REPS[name]||e.r;
+function setsText(e,name){ return e.n+" × "+repsOf(e,name); }
+/* tempo previsto: cada série = execução + 1 min de descanso */
+function minutesOf(e,name){
+  const r=repsOf(e,name), lados=/cada (braço|perna|lado)/.test(r);
+  let work = /\d+ s/.test(r) ? (/20 a 30 s|30 s/.test(r)?0.5:0.4) : 1;
+  if(lados) work*=2;
+  return Math.max(2,Math.round(e.n*(work+1)));
+}
 function altsOf(e,others){
   const now=nameOf(e);
   const pool=[...(now!==e.main?[e.main]:[]),...e.alt,...e.o];
@@ -222,17 +222,19 @@ function guideHTML(name){
   return `<div class="guide"><p class="gt">Como fazer</p><ol class="how-l">${g.how.map(h=>`<li>${esc(h)}</li>`).join("")}</ol>
     <p class="gt">Seus cuidados</p><ul class="care-l">${g.care.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>`;
 }
-function exHTML(e,i,all){
+function stepShell(key,min,kind,color,rowHTML,bodyHTML,isOpen){
+  return `<li class="st${isOpen?" open":""}" id="st-${key}" data-kind="${kind}" style="--k:${color}">
+    <span class="rail" aria-hidden="true"><i></i></span>
+    <div class="content">${rowHTML}${isOpen?bodyHTML:""}</div>
+  </li>`;
+}
+function exStep(e,min,all,kind,color,label){
   const key=e.key, isOpen=openId===key, name=nameOf(e), swapped=name!==e.main;
   const others=new Set(all.filter(x=>x.key!==key).map(nameOf));
   const alts=altsOf(e,others);
-  return `<li class="ex${isOpen?" open":""}" id="ex-${key}">
-    <button class="row" data-open="${key}" aria-expanded="${isOpen}">
-      <span class="num">${i+1}</span>
-      <span class="tx"><b>${esc(name)}</b><span>${esc(setsText(e,name))}</span>${swapped?`<em>no lugar de ${esc(e.main)}</em>`:""}</span>
-      ${I_CHEV}
-    </button>
-    ${isOpen?`<div class="body">
+  const row=`<button class="row" data-open="${key}" aria-expanded="${isOpen}">
+      <span class="tx"><b>${esc(name)}</b><span>${esc(label)}, ${esc(setsText(e,name))}, descanso ${e.rest||1} min</span>${swapped?`<em>no lugar de ${esc(e.main)}</em>`:""}</span>${I_CHEV}</button>`;
+  const body=`<div class="body">
       ${guideHTML(name)}
       <div class="acts">
         <a class="btn btn-play" href="${yt(name)}" target="_blank" rel="noopener">${I_PLAY}Ver execução</a>
@@ -242,8 +244,8 @@ function exHTML(e,i,all){
         alts.map(n=>`<div class="swap"><span>${esc(n)}</span><a href="${yt(n)}" target="_blank" rel="noopener">Vídeo</a><button data-use="${key}" data-name="${esc(n)}">Trocar</button></div>`).join("")
       }</div>`:""}
       ${swapped?`<button class="undo" data-undo="${key}">Voltar para ${esc(e.main)}</button>`:""}
-    </div>`:""}
-  </li>`;
+    </div>`;
+  return stepShell(key,min,kind,color,row,body,isOpen);
 }
 
 function render(){
@@ -251,56 +253,70 @@ function render(){
   app.style.setProperty("--c","var(--"+D.c+")"); app.dataset.c=D.c;
   document.getElementById("days").innerHTML=DAYS.map((d,i)=>
     `<button class="day" data-day="${i}" data-c="${d.c}" style="--c:var(--${d.c})" aria-pressed="${i===cur}"><b>${d.day}</b><span>${d.short}</span>${i===todayIdx?'<i class="dot" aria-hidden="true"></i><span class="sr">, hoje</span>':""}</button>`).join("");
+  const wd=new Date().getDay();
+  document.getElementById("dayname").textContent = NAMES[cur] + (cur===todayIdx ? ", treino de hoje" : (wd===0||wd===6 ? ", próximo treino" : ""));
+  document.getElementById("blockinfo").textContent = `${all.length} exercícios. Bloco ${B.b+1} de 3, trocas em ${fmt.format(B.next)}`;
   document.getElementById("title").textContent=D.title;
-  const wd=new Date().getDay(), lead = cur===todayIdx ? "Treino de hoje. " : (wd===0||wd===6 ? "Fim de semana. O próximo treino é na segunda. " : "");
-  document.getElementById("sub").textContent=`${lead}${all.length} exercícios, cerca de 50 min. Bloco ${B.b+1} de 3, algumas trocas em ${fmt.format(B.next)}.`;
-  document.getElementById("stretch").innerHTML=`
-    <button data-st aria-expanded="${stOpen}">${I_STRETCH}<span class="tx"><b>Alongar: ${esc(D.st.map(s=>s[0].split(",")[0].toLowerCase()).join(", "))}</b><span>Antes ou depois do treino</span></span>${I_CHEV}</button>
-    ${stOpen?`<div class="st-list">${D.st.map(s=>`<div class="st-block"><div class="st-item"><div><span>${esc(s[0])}</span><small>${esc(s[1])}</small></div><a class="btn btn-line" href="${yt(s[0])}" target="_blank" rel="noopener">${I_PLAY}Vídeo</a></div>${guideHTML(s[0])}</div>`).join("")}</div>`:""}`;
-  document.getElementById("main").innerHTML=S.main.map((e,i)=>exHTML(e,i,all)).join("");
-  document.getElementById("core").innerHTML=S.core.map((e,i)=>exHTML(e,S.main.length+i,all)).join("");
+
+
+  let t=0, h="";
+  const warmOpen=openId==="warm";
+  h+=stepShell("warm",t,"warm","var(--warm)",
+    `<button class="row" data-open="warm" aria-expanded="${warmOpen}"><span class="tx"><b>Aquecimento</b><span>${WARM_MIN} min de bike leve</span></span>${I_CHEV}</button>`,
+    `<div class="body"><p class="plain">Bike leve por ${WARM_MIN} minutos, num ritmo em que dá para conversar. Na primeira série de cada exercício, use metade da carga.</p></div>`, warmOpen);
+  t+=WARM_MIN;
+  S.main.forEach(e=>{ h+=exStep(e,t,all,"ex","var(--c)",e.tag); t+=minutesOf(e,nameOf(e)); });
+  S.core.forEach(e=>{ h+=exStep(e,t,all,"core","var(--core)",e.tag); t+=minutesOf(e,nameOf(e)); });
+  const stOpen=openId==="stretch";
+  h+=stepShell("stretch",t,"stretch","var(--stretch)",
+    `<button class="row" data-open="stretch" aria-expanded="${stOpen}"><span class="tx"><b>Alongamento</b><span>${esc(D.st.map((s,i)=>{const n=s[0].split(",")[0]; return i?n.charAt(0).toLowerCase()+n.slice(1):n;}).join(" e "))}</span></span>${I_CHEV}</button>`,
+    `<div class="body">${D.st.map(s=>`<div class="st-block"><div class="st-item"><div><span>${esc(s[0])}</span><small>${esc(s[1])}</small></div><a class="btn btn-line" href="${yt(s[0])}" target="_blank" rel="noopener">${I_PLAY}Vídeo</a></div>${guideHTML(s[0])}</div>`).join("")}<p class="plain">Pode fazer antes ou depois do treino. Deve puxar de leve, nunca doer.</p></div>`, stOpen);
+  t+=STRETCH_MIN;
+  h+=`<li class="st" data-kind="end" style="--k:var(--muted)"><span class="rail" aria-hidden="true"><i></i></span><div class="content"><div class="row"><span class="tx"><b>Fim</b><span>Depois, a sua caminhada</span></span></div></div></li>`;
+  document.getElementById("tl").innerHTML=h;
 }
 
-/* devolve o foco ao botão equivalente depois de redesenhar */
 function refocus(attr,val){
   if(!attr) return;
   const el=document.querySelector(`[${attr}${val!=null?`="${CSS.escape(val)}"`:""}]`);
   if(el) el.focus({preventScroll:true});
 }
+function scrollToStep(k){
+  const el=document.getElementById("st-"+k);
+  if(el) el.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+}
 
 document.addEventListener("click",ev=>{
-  const t=ev.target.closest("[data-day],[data-open],[data-swap],[data-use],[data-undo],[data-st]");
+  const t=ev.target.closest("[data-day],[data-open],[data-swap],[data-use],[data-undo]");
   if(!t) return;
   if(t.dataset.day!==undefined){
     const i=+t.dataset.day; if(i===cur) return;
-    cur=i; openId=null; swapOpen={}; stOpen=false; save(); render(); refocus("data-day",String(i)); window.scrollTo({top:0}); return;
+    cur=i; openId=null; swapOpen={}; save(); render(); refocus("data-day",String(i)); window.scrollTo({top:0}); return;
   }
   if(t.dataset.open){
     const k=t.dataset.open; openId = openId===k?null:k; save(); render(); refocus("data-open",k);
-    if(openId){ const el=document.getElementById("ex-"+k); if(el) el.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
+    if(openId) scrollToStep(k);
     return;
   }
   if(t.dataset.swap){ const k=t.dataset.swap; swapOpen[k]=!swapOpen[k]; render(); refocus("data-swap",k); return; }
   if(t.dataset.use){
-    const k=t.dataset.use, n=t.dataset.name, D=DAYS[cur], S=slotsFor(D,blockInfo());
+    const k=t.dataset.use, n=t.dataset.name, S=slotsFor(DAYS[cur],blockInfo());
     const e=[...S.main,...S.core].find(x=>x.key===k);
     if(e && n===e.main) delete chosen[k]; else chosen[k]=n;
     swapOpen[k]=false; save(); render(); refocus("data-open",k); return;
   }
   if(t.dataset.undo){ const k=t.dataset.undo; delete chosen[k]; save(); render(); refocus("data-open",k); return; }
-  if(t.hasAttribute("data-st")){ stOpen=!stOpen; render(); refocus("data-st"); return; }
 });
 
-/* ao voltar para o app: troca de dia se virou a data, e procura versão nova */
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible") return;
   const k=dayKey(today0());
-  if(k!==stamp){ stamp=k; todayIdx=todayIndex(); cur=todayIdx>=0?todayIdx:0; openId=null; swapOpen={}; chosen={}; stOpen=false; save(); render(); }
+  if(k!==stamp){ stamp=k; todayIdx=todayIndex(); cur=todayIdx>=0?todayIdx:0; openId=null; swapOpen={}; chosen={}; save(); render(); }
   if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration) navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{});
 });
 
 render();
-if(openId){ const el=document.getElementById("ex-"+openId); if(el) el.scrollIntoView({block:"start"}); }
+if(openId) scrollToStep(openId);
 if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }); }
 })();
 </script>
